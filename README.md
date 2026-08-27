@@ -12,13 +12,26 @@
 |  |  ;/  \   \   `----.   \ |   : |     |   |  | |   |  |         '   | ;  .  | '  | |    '  :  /    /    /  |  /    / '  :__,'| :    '   | |: : '  :  /    , ' , ' :  
 '  :  | \  \ ,'   __ \  \  | .   | '___  '   :  ; '   :  ;         |   | :  |  ' |  | :    |  | '    .    ' / | .    ' /     '  : |__  '   | .; : |  | '    /___/ \: |  
 |  |  '  '--'    /  /`--'  / '   ; : .'| |   |  ' |   |  '         '   : | /  ;  '  : |__  ;  : |    '   ;   /| '   ; :__    |  | '.'| |   :    | ;  : |     .  \\  ' |  
-|  :  :         '--'.     /  '   | '/  : '   :  | '   :  |         |   | '` ,/   |  | '.'| |  , ;    '   |  / | '   | '.'|   ;  :    ;  \   \  /  |  , ;      \  ;   :  
-|  | ,'           `--'---'   |   :    /  ;   |.'  ;   |.'          ;   :  .'     ;  :    ;  ---'     |   :    | |   :    :   |  ,   /    `----'    ---'        \  \  ;  
-`--''                         \   \ .'   '---'    '---'            |   ,.'       |  ,   /             \   \  /   \   \  /     ---`-'                            :  \\  \\ 
+|  :  :         '--'.     /  '   | '/  : '   :  | '   :  |         |   | '` ,/   |  | '.'| |  , ;    '   |  / | '   | '.'|   ;  :    ;  \   \  /  |  , ;      \\  ;   :  
+|  | ,'           `--'---'   |   :    /  ;   |.'  ;   |.'          ;   :  .'     ;  :    ;  ---'     |   :    | |   :    :   |  ,   /    `----'    ---'        \\  \\  ;  
+`--''                         \\   \\ .'   '---'    '---'            |   ,.'       |  ,   /             \\   \\  /   \\   \\  /     ---`-'                            :  \\  \\ 
                                `---`                               '---'          ---`-'               `----'     `----'                                         \\  ' ; 
                                                                                                                                                                   `--`  
 ====================================================================================================================================================
 ```
+
+---
+
+## ⚡ 1-Line Proxmox LXC Installer (Helper Script)
+
+Run this command directly in your **Proxmox VE Host Shell** to automatically download the Debian 12 template, create an unprivileged LXC container, install Node.js 22 LTS, clone this repository, build the app, and start the systemd service on boot:
+
+```bash
+# For private repository (provide your GitHub PAT token):
+bash <(curl -fsSL -H "Authorization: token YOUR_GITHUB_TOKEN" https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
+```
+
+*(If the repository is public, you can run simply `bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)`)*
 
 ---
 
@@ -52,57 +65,23 @@
 
 ---
 
-## 🚀 Quick Start (Local)
+## 🚀 Manual Deployment
 
+### Local Machine
 ```bash
-# 1. Clone the repository
 git clone https://github.com/ARCHA1E/ASCII-Directory.git
 cd ASCII-Directory
-
-# 2. Install dependencies
 npm install
-
-# 3. Configure environment variables (optional)
-cp .env.example .env
-
-# 4. Build and start server
 npm run build
 npm start
 ```
 
-Access the web interface at `http://localhost:3000`.
-
----
-
-## 🖥️ Proxmox Deployment
-
-### Option A: Proxmox LXC Container (Debian / Ubuntu)
-
-1. Create a standard Debian 12 or Ubuntu 22.04+ LXC container in Proxmox.
-2. Inside your LXC container console, clone this repository and run the setup script:
-   ```bash
-   git clone https://github.com/ARCHA1E/ASCII-Directory.git /opt/ascii-directory
-   cd /opt/ascii-directory
-   chmod +x deployment/proxmox-lxc.sh
-   ./deployment/proxmox-lxc.sh
-   ```
-3. The script automatically installs Node.js 22 LTS (if missing), builds the assets, prompts for your desired admin password, and starts the `ascii-directory` systemd service configured to auto-start on boot.
-
-Manage the service:
+### Docker / Docker Compose
 ```bash
-systemctl status ascii-directory
-systemctl restart ascii-directory
+git clone https://github.com/ARCHA1E/ASCII-Directory.git
+cd ASCII-Directory
+docker compose up -d --build
 ```
-
-### Option B: Docker / Docker Compose in Proxmox
-
-1. In your Docker-enabled LXC container or VM:
-   ```bash
-   git clone https://github.com/ARCHA1E/ASCII-Directory.git
-   cd ASCII-Directory
-   docker compose up -d --build
-   ```
-2. The directory will be available on port `3000` (or `PORT` configured in `.env`).
 
 ---
 
@@ -168,15 +147,6 @@ Type any of the following into the command line:
 | `whoami`, `uptime`, `date`, `cal` | Standard system information utilities |
 | `ping <host>`, `traceroute <host>` | Network diagnostics |
 | `help` / `man` | Full command reference list |
-
----
-
-## 🔒 Security & Data Integrity
-
-- **Server-Side Authentication**: Master password is never transmitted to client JS bundles or exposed in responses.
-- **HTTP-Only Cookies & Rate Limiting**: Brute-force protection blocks suspicious IPs after consecutive failed login attempts.
-- **Atomic Persistence**: Directory data is written atomically using temporary swap files (`fs.renameSync`) to prevent file corruption during sudden power losses.
-- **Rolling Backups**: Automatically stores the last 10 versions in `data/backups/` every time a change is saved.
 
 ---
 
