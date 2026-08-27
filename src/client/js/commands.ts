@@ -1,5 +1,5 @@
 import { state, ThemeType } from './state.js';
-import { sound, MusicTrack } from './audio.js';
+import { sound, MusicTrack, TRACK_REGISTRY } from './audio.js';
 
 export interface CommandResult {
   text?: string;
@@ -692,18 +692,180 @@ commands['zork'] = commands['adventure'] = (args) => {
 
 // ── 15. Procedural Music Synthesizer & Easter Egg Melodies ────────────────────
 commands['music'] = (args) => {
-  const target = (args[0] || '').toLowerCase() as MusicTrack | 'status';
-  if (['cyberspace', 'neon', 'ambient', 'generative'].includes(target)) {
-    sound.setTrack(target as MusicTrack);
-    sound.playSuccessChime();
-    return { text: `[SYNTHESIZER] Procedural track switched to: ${target.toUpperCase()}`, isSuccess: true };
+  const target = (args[0] || '').toLowerCase() as MusicTrack | 'status' | 'list' | 'stop' | 'mute';
+  if (!target || target === 'status' || target === 'list') {
+    const currentMeta = sound.getTrackMetadata();
+    return {
+      text: `
+=======================[ ♪ MUSIC SYNTHESIZER ]========================
+CURRENT TRACK: ${currentMeta.title.toUpperCase()}
+COMPOSER:      ${currentMeta.composer}
+SOURCE:        ${currentMeta.source}
+LICENSE:       ${currentMeta.license}
+ATTRIBUTION:   ${currentMeta.attribution}
+
+AVAILABLE TRACKS & PLAYLISTS:
+  • minecraft   - Full C418 Minecraft Suite (Continuous Playlist)
+  • sweden      - C418 - Sweden (Calm 3)
+  • subwoofer   - C418 - Subwoofer Lullaby (Hal 1)
+  • wethands    - C418 - Wet Hands (Piano 1)
+  • miceonvenus - C418 - Mice on Venus (Piano 3)
+  • cat         - C418 - Cat (Green Music Disc)
+  • wellerman   - Traditional - Soon May the Wellerman Come (Sea Shanty)
+  • sneakysnitch- Kevin MacLeod - Sneaky Snitch (CC-BY 4.0)
+  • odetojoy    - Beethoven - Ode to Joy (Neon Genesis Evangelion)
+  • cyberspace  - 8-bit Arpeggios & Bassline
+  • neon        - 16-bit Lo-Fi FM Chords & Sub-Bass
+  • ambient     - Deep Space Drone & Celestial Chimes
+  • generative  - Infinite Self-Evolving Algorithmic Melody
+  • off / stop  - Stop Background Synthesizer
+
+USAGE: music <track_name> | Type 'credits' for full legal licenses.
+======================================================================
+      `.trim()
+    };
   }
+
   if (target === 'off' || target === 'stop' || target === 'mute') {
     sound.setTrack('off');
-    return { text: "[SYNTHESIZER] Procedural background music STOPPED.", isSuccess: true };
+    return { text: "[SYNTHESIZER] Background music STOPPED.", isSuccess: true };
   }
-  const current = sound.getCurrentTrack();
-  return { text: `Usage: music <cyberspace|neon|ambient|generative|off> (Current: ${current.toUpperCase()})` };
+
+  if (TRACK_REGISTRY[target as MusicTrack]) {
+    const meta = sound.setTrack(target as MusicTrack);
+    sound.playSuccessChime();
+    return {
+      text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+      isSuccess: true
+    };
+  }
+
+  return { text: `Unknown track: "${target}". Type 'music' or 'music list' for available tracks.`, isError: true };
+};
+
+// Direct Music Shortcuts with Attribution
+commands['minecraft'] = () => {
+  const meta = sound.setTrack('minecraft');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['sweden'] = () => {
+  const meta = sound.setTrack('sweden');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['subwoofer'] = () => {
+  const meta = sound.setTrack('subwoofer');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['wethands'] = () => {
+  const meta = sound.setTrack('wethands');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['miceonvenus'] = () => {
+  const meta = sound.setTrack('miceonvenus');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['catdisc'] = () => {
+  const meta = sound.setTrack('cat');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['wellerman'] = () => {
+  const meta = sound.setTrack('wellerman');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['sneakysnitch'] = commands['sneaky'] = () => {
+  const meta = sound.setTrack('sneakysnitch');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+commands['odetojoy'] = commands['evangelion'] = () => {
+  const meta = sound.setTrack('odetojoy');
+  sound.playSuccessChime();
+  return {
+    text: `[♪ NOW PLAYING]: ${meta.title}\n[COMPOSER]:    ${meta.composer}\n[ATTRIBUTION]: ${meta.attribution}`,
+    isSuccess: true
+  };
+};
+
+// Dedicated Full Legal Credits & Attributions
+commands['credits'] = commands['attribution'] = commands['license'] = () => {
+  return {
+    text: `
+╔════════════════════════════════════════════════════════════════════════════╗
+║                ASCII GATEWAY // MUSIC CREDITS & ATTRIBUTIONS               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+All music in this application is 100% programmatically synthesized in real-time
+via Web Audio API code. Zero media files, MP3s, or recordings are stored.
+
+1. MINECRAFT SOUNDTRACK SUITE
+   • Tracks: Sweden, Subwoofer Lullaby, Wet Hands, Mice on Venus, Cat
+   • Composer: C418 (Daniel Rosenfeld) - https://c418.org
+   • License: Non-Commercial Fan Use with Attribution (C418 Terms)
+   • Attribution: "Music composed by C418 (Daniel Rosenfeld)"
+
+2. SNEAKY SNITCH
+   • Composer: Kevin MacLeod - https://incompetech.com
+   • License: Creative Commons Attribution 4.0 International (CC-BY 4.0)
+   • Attribution: "Sneaky Snitch by Kevin MacLeod (incompetech.com), licensed under CC-BY 4.0"
+
+3. SOON MAY THE WELLERMAN COME
+   • Origin: Traditional 19th-Century New Zealand Sea Shanty
+   • License: Public Domain
+
+4. ODE TO JOY (SYMPHONY NO. 9)
+   • Composer: Ludwig van Beethoven (1824)
+   • Featured In: Neon Genesis Evangelion
+   • License: Public Domain
+
+5. PROCEDURAL RETRO ENGINE
+   • Tracks: Cyberspace, Neon Dreams, Deep Ambient, Generative Mode
+   • Composer: ASCII Directory Web Synthesizer Engine
+   • License: MIT Open Source
+
+Type 'music <track>' to play any piece.
+══════════════════════════════════════════════════════════════════════════════
+    `.trim(),
+    isSuccess: true
+  };
 };
 
 commands['zelda'] = () => {
