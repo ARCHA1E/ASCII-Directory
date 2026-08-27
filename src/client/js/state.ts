@@ -78,19 +78,32 @@ export class AppState {
   public setTheme(theme: ThemeType): void {
     this.currentTheme = theme;
     localStorage.setItem('ascii_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
     document.body.dataset.theme = theme;
     this.notify();
+  }
+
+  public cycleTheme(): void {
+    const themes: ThemeType[] = ['green', 'amber', 'cyan', 'white', 'matrix'];
+    const idx = themes.indexOf(this.currentTheme);
+    const nextTheme = themes[(idx + 1) % themes.length];
+    this.setTheme(nextTheme);
   }
 
   public setCrtEnabled(enabled: boolean): void {
     this.crtEnabled = enabled;
     localStorage.setItem('ascii_crt_enabled', String(enabled));
     if (enabled) {
-      document.body.classList.add('crt-active');
+      document.body.classList.add('crt-enabled', 'crt-active');
     } else {
-      document.body.classList.remove('crt-active');
+      document.body.classList.remove('crt-enabled', 'crt-active');
     }
     this.notify();
+  }
+
+  public toggleCrt(): boolean {
+    this.setCrtEnabled(!this.crtEnabled);
+    return this.crtEnabled;
   }
 
   public rebuildIndex(): void {

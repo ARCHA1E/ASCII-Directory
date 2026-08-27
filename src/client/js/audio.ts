@@ -35,7 +35,7 @@ export class SoundSynthesizer {
     return this.enabled;
   }
 
-  // Synthesize mechanical keyboard key-clack
+  // Synthesize mechanical keyboard key-clack (raised 15-20%)
   public playKeyClick(): void {
     if (!this.enabled) return;
     try {
@@ -57,7 +57,7 @@ export class SoundSynthesizer {
       filter.frequency.setValueAtTime(1400 + Math.random() * 400, now);
       filter.Q.setValueAtTime(3, now);
 
-      gain.gain.setValueAtTime(0.045, now);
+      gain.gain.setValueAtTime(0.055, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
 
       osc.connect(filter);
@@ -71,7 +71,7 @@ export class SoundSynthesizer {
     }
   }
 
-  // Synthesize 8-bit PC speaker beep
+  // Synthesize 8-bit PC speaker beep (raised 15-20%)
   public playBeep(freq = 640, duration = 0.1, type: OscillatorType = 'square'): void {
     if (!this.enabled) return;
     try {
@@ -85,7 +85,7 @@ export class SoundSynthesizer {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, now);
 
-      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.setValueAtTime(0.075, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
       osc.connect(gain);
