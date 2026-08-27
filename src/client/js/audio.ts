@@ -42,7 +42,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   sweden: {
     id: 'sweden',
-    title: 'Sweden (Calm 3)',
+    title: 'Sweden (Calm 3) [Full Arrangement]',
     composer: 'C418 (Daniel Rosenfeld)',
     source: 'Minecraft: Volume Alpha',
     license: 'Non-Commercial Fan Use with Attribution',
@@ -50,7 +50,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   subwoofer: {
     id: 'subwoofer',
-    title: 'Subwoofer Lullaby (Hal 1)',
+    title: 'Subwoofer Lullaby (Hal 1) [Full Arrangement]',
     composer: 'C418 (Daniel Rosenfeld)',
     source: 'Minecraft: Volume Alpha',
     license: 'Non-Commercial Fan Use with Attribution',
@@ -58,7 +58,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   wethands: {
     id: 'wethands',
-    title: 'Wet Hands (Piano 1)',
+    title: 'Wet Hands (Piano 1) [Full Arrangement]',
     composer: 'C418 (Daniel Rosenfeld)',
     source: 'Minecraft: Volume Alpha',
     license: 'Non-Commercial Fan Use with Attribution',
@@ -66,7 +66,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   miceonvenus: {
     id: 'miceonvenus',
-    title: 'Mice on Venus (Piano 3)',
+    title: 'Mice on Venus (Piano 3) [Full Arrangement]',
     composer: 'C418 (Daniel Rosenfeld)',
     source: 'Minecraft: Volume Alpha',
     license: 'Non-Commercial Fan Use with Attribution',
@@ -74,7 +74,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   cat: {
     id: 'cat',
-    title: 'Cat (Green Music Disc)',
+    title: 'Cat (Green Music Disc) [Full Arrangement]',
     composer: 'C418 (Daniel Rosenfeld)',
     source: 'Minecraft: Volume Alpha',
     license: 'Non-Commercial Fan Use with Attribution',
@@ -82,7 +82,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   wellerman: {
     id: 'wellerman',
-    title: 'Soon May the Wellerman Come',
+    title: 'Soon May the Wellerman Come (Full Shanty)',
     composer: 'Traditional (19th-Century New Zealand Shanty)',
     source: 'Public Domain Folk Heritage',
     license: 'Public Domain',
@@ -90,7 +90,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   sneakysnitch: {
     id: 'sneakysnitch',
-    title: 'Sneaky Snitch',
+    title: 'Sneaky Snitch (Full Arrangement)',
     composer: 'Kevin MacLeod',
     source: 'Incompetech (incompetech.com)',
     license: 'Creative Commons Attribution 4.0 (CC-BY 4.0)',
@@ -98,7 +98,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   odetojoy: {
     id: 'odetojoy',
-    title: 'Ode to Joy (Symphony No. 9)',
+    title: 'Ode to Joy (Symphony No. 9 - Full Symphony Movement)',
     composer: 'Ludwig van Beethoven (1824)',
     source: 'Neon Genesis Evangelion / Public Domain',
     license: 'Public Domain',
@@ -106,7 +106,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   cyberspace: {
     id: 'cyberspace',
-    title: 'Cyberspace (8-bit Arpeggios)',
+    title: 'Cyberspace (8-bit Extended Arpeggios)',
     composer: 'ASCII Gateway Synthesizer Engine',
     source: 'Procedural Algorithm',
     license: 'MIT / Open Source',
@@ -114,7 +114,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   neon: {
     id: 'neon',
-    title: 'Neon Dreams (16-bit Lo-Fi)',
+    title: 'Neon Dreams (16-bit Lo-Fi Chords)',
     composer: 'ASCII Gateway Synthesizer Engine',
     source: 'Procedural Algorithm',
     license: 'MIT / Open Source',
@@ -122,7 +122,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   ambient: {
     id: 'ambient',
-    title: 'Deep Terminal Ambient',
+    title: 'Deep Terminal Ambient (Space Drone)',
     composer: 'ASCII Gateway Synthesizer Engine',
     source: 'Procedural Algorithm',
     license: 'MIT / Open Source',
@@ -137,6 +137,14 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
     attribution: 'Infinite self-evolving algorithmic pentatonic loop.'
   }
 };
+
+interface SongNote {
+  f: number;      // Melody Frequency in Hz
+  d: number;      // Note Duration in seconds
+  b?: number;     // Bass Frequency in Hz
+  chord?: number[]; // Polyphonic harmony chords
+  type?: OscillatorType;
+}
 
 export class SoundSynthesizer {
   private ctx: AudioContext | null = null;
@@ -304,6 +312,7 @@ export class SoundSynthesizer {
       'sweden', 
       'subwoofer', 
       'wethands', 
+      'miceonvenus',
       'cat', 
       'wellerman', 
       'sneakysnitch', 
@@ -337,28 +346,28 @@ export class SoundSynthesizer {
         this.playMinecraftSuite();
         break;
       case 'sweden':
-        this.playSwedenLoop();
+        this.playSwedenFull();
         break;
       case 'subwoofer':
-        this.playSubwooferLoop();
+        this.playSubwooferFull();
         break;
       case 'wethands':
-        this.playWetHandsLoop();
+        this.playWetHandsFull();
         break;
       case 'miceonvenus':
-        this.playMiceOnVenusLoop();
+        this.playMiceOnVenusFull();
         break;
       case 'cat':
-        this.playCatDiscLoop();
+        this.playCatDiscFull();
         break;
       case 'wellerman':
-        this.playWellermanLoop();
+        this.playWellermanFull();
         break;
       case 'sneakysnitch':
-        this.playSneakySnitchLoop();
+        this.playSneakySnitchFull();
         break;
       case 'odetojoy':
-        this.playOdeToJoyLoop();
+        this.playOdeToJoyFull();
         break;
       case 'cyberspace':
         this.playCyberspaceLoop();
@@ -375,14 +384,14 @@ export class SoundSynthesizer {
     }
   }
 
-  // ── MINECRAFT SUITE PLAYLIST ────────────────────────────────────────────────
+  // ── MINECRAFT SUITE CONTINUOUS PLAYLIST ──────────────────────────────────────
   private playMinecraftSuite(): void {
     const playlist = [
-      () => this.playSwedenLoop(false),
-      () => this.playSubwooferLoop(false),
-      () => this.playWetHandsLoop(false),
-      () => this.playMiceOnVenusLoop(false),
-      () => this.playCatDiscLoop(false)
+      () => this.playSwedenFull(false),
+      () => this.playSubwooferFull(false),
+      () => this.playWetHandsFull(false),
+      () => this.playMiceOnVenusFull(false),
+      () => this.playCatDiscFull(false)
     ];
 
     const runNext = () => {
@@ -395,70 +404,390 @@ export class SoundSynthesizer {
     runNext();
   }
 
-  // 1. C418 - "Sweden"
-  public playSwedenLoop(loopSelf = true): void {
-    // D Major / G Major chords & melody
-    const fS4 = 369.99, d4 = 293.66, e4 = 329.63, g4 = 392.00, b3 = 246.94, a3 = 220.00, fS3 = 185.00, d3 = 146.83, g3 = 196.00, b2 = 123.47;
-    const notes: { f: number; d: number; b?: number }[] = [
-      { f: fS4, d: 0.9, b: d3 },
+  // ── 1. C418 - "SWEDEN" (FULL COMPLETE SONG ARRANGEMENT) ──────────────────────
+  public playSwedenFull(loopSelf = true): void {
+    const fS4 = 369.99, d4 = 293.66, e4 = 329.63, g4 = 392.00, b3 = 246.94, a3 = 220.00, fS3 = 185.00;
+    const a4 = 440.00, b4 = 493.88, cS5 = 554.37, d5 = 587.33, e5 = 659.25, fS5 = 739.99;
+    const d3 = 146.83, g3 = 196.00, b2 = 123.47, a2 = 110.00, e3 = 164.81, d2 = 73.42, g2 = 98.00;
+
+    const fullSong: SongNote[] = [
+      // ── SECTION A: First Theme Statement ──
+      { f: fS4, d: 0.9, b: d3, chord: [d4, a3] },
       { f: d4,  d: 0.7 },
       { f: e4,  d: 0.7 },
-      { f: fS4, d: 0.9, b: g3 },
+      { f: fS4, d: 0.9, b: g3, chord: [b3, d4] },
       { f: g4,  d: 0.8 },
       { f: fS4, d: 0.8 },
-      { f: e4,  d: 0.9, b: b2 },
+      { f: e4,  d: 0.9, b: b2, chord: [d4, fS3] },
       { f: d4,  d: 0.7 },
+      { f: b3,  d: 0.7 },
+      { f: d4,  d: 0.9, b: g3, chord: [b3, d4] },
+      { f: e4,  d: 0.9 },
+      { f: d4,  d: 1.4, b: d2 },
+
+      // ── SECTION A2: Second Phrase with Rising A4 ──
+      { f: fS4, d: 0.9, b: d3, chord: [d4, a3] },
+      { f: a4,  d: 0.7 },
+      { f: g4,  d: 0.7 },
+      { f: fS4, d: 0.9, b: g3, chord: [b3, d4] },
+      { f: e4,  d: 0.8 },
+      { f: d4,  d: 0.8 },
+      { f: b3,  d: 0.9, b: b2, chord: [d4, fS3] },
+      { f: d4,  d: 0.7 },
+      { f: e4,  d: 0.7 },
+      { f: fS4, d: 0.9, b: a2, chord: [cS4, e4] },
+      { f: e4,  d: 0.9 },
+      { f: d4,  d: 1.6, b: d3 },
+
+      // ── SECTION B: Main Chorus Swell & High Octave Melody ──
+      { f: a4,  d: 0.8, b: g2, chord: [d4, g4] },
+      { f: b4,  d: 0.7 },
+      { f: d5,  d: 1.1, b: d3, chord: [fS4, a4] },
+      { f: cS5, d: 0.7 },
+      { f: b4,  d: 0.7 },
+      { f: a4,  d: 1.0, b: e3, chord: [g4, b3] },
+      { f: fS4, d: 0.7 },
+      { f: d4,  d: 0.7 },
+      { f: e4,  d: 0.8, b: a2, chord: [cS4, e4] },
+      { f: fS4, d: 0.8 },
+      { f: g4,  d: 0.8 },
+      { f: fS4, d: 0.8, b: d3, chord: [a3, d4] },
+      { f: e4,  d: 1.4 },
+
+      // ── SECTION B2: Climax Variation ──
+      { f: a4,  d: 0.8, b: g2, chord: [d4, g4] },
+      { f: b4,  d: 0.7 },
+      { f: d5,  d: 0.9, b: d3, chord: [fS4, a4] },
+      { f: e5,  d: 0.9 },
+      { f: d5,  d: 0.9, b: b2, chord: [fS4, d4] },
+      { f: b4,  d: 0.7 },
+      { f: a4,  d: 0.9, b: g3, chord: [b3, d4] },
+      { f: fS4, d: 0.7 },
+      { f: e4,  d: 0.7 },
+      { f: d4,  d: 0.8, b: d3, chord: [a3, d4] },
       { f: b3,  d: 0.7 },
       { f: d4,  d: 0.9, b: g3 },
       { f: e4,  d: 0.9 },
-      { f: d4,  d: 1.4 }
+      { f: d4,  d: 1.8, b: d2 },
+
+      // ── SECTION C: Soft Resolving Outro ──
+      { f: fS4, d: 0.9, b: d3, chord: [a3, d4] },
+      { f: d4,  d: 0.7 },
+      { f: e4,  d: 0.7 },
+      { f: d4,  d: 0.9, b: g3, chord: [b3, d4] },
+      { f: b3,  d: 0.7 },
+      { f: a3,  d: 0.7 },
+      { f: b3,  d: 0.9, b: b2 },
+      { f: d4,  d: 0.9, b: g3 },
+      { f: e4,  d: 0.9 },
+      { f: d4,  d: 2.2, b: d2, chord: [fS3, a3, d4] }
     ];
 
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || (this.currentTrack !== 'sweden' && this.currentTrack !== 'minecraft')) return;
-
-      if (step < notes.length) {
-        const item = notes[step];
-        this.synthPluck(item.f, item.d * 1.8, 'triangle', this.musicMasterVol * 0.7, 950);
-        if (item.b) {
-          this.synthPluck(item.b, item.d * 2.5, 'sine', this.musicMasterVol * 0.9, 350);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 900);
-      } else {
-        if (loopSelf) {
-          step = 0;
-          this.musicTimer = setTimeout(playNext, 2000);
-        } else {
-          this.musicTimer = setTimeout(() => this.playMinecraftSuite(), 2000);
-        }
-      }
-    };
-
-    playNext();
+    this.playSongSequence(fullSong, 'sweden', loopSelf);
   }
 
-  // 2. C418 - "Subwoofer Lullaby"
-  public playSubwooferLoop(loopSelf = true): void {
-    const c5 = 523.25, g4 = 392.00, e4 = 329.63, d5 = 587.33, f4 = 349.23, b4 = 493.88, c4 = 261.63, a2 = 110.00, c3 = 130.81, f2 = 87.31;
-    const sequence: { f: number; d: number; b?: number }[] = [
+  // ── 2. C418 - "SUBWOOFER LULLABY" (FULL COMPLETE SONG ARRANGEMENT) ────────────
+  public playSubwooferFull(loopSelf = true): void {
+    const c5 = 523.25, g4 = 392.00, e4 = 329.63, d5 = 587.33, f4 = 349.23, b4 = 493.88, c4 = 261.63, a4 = 440.00;
+    const e5 = 659.25, f5 = 698.46, g5 = 783.99, a2 = 110.00, c3 = 130.81, f2 = 87.31, g2 = 98.00, c2 = 65.41;
+
+    const fullSong: SongNote[] = [
+      // ── SECTION A: Initial Music-Box Theme ──
+      { f: c5, d: 0.6, b: a2, chord: [c4, e4] }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: d5, d: 0.6, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: f4, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: c5, d: 0.6, b: c3, chord: [e4, g4] }, { f: b4, d: 0.4 }, { f: g4, d: 0.5 }, { f: e4, d: 0.4 },
+      { f: f4, d: 0.5, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: c4, d: 0.9 },
+
+      // ── SECTION A2: Second Theme Development ──
+      { f: c5, d: 0.6, b: a2, chord: [c4, e4] }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: d5, d: 0.6, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: f4, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: e5, d: 0.7, b: g2, chord: [b3, d4] }, { f: d5, d: 0.5 }, { f: c5, d: 0.5 }, { f: b4, d: 0.4 },
+      { f: a4, d: 0.5, b: c3, chord: [e4, g4] }, { f: g4, d: 0.4 }, { f: c5, d: 1.1 },
+
+      // ── SECTION B: Soaring High Octave Melody ──
+      { f: e5, d: 0.6, b: c3, chord: [g4, c5] }, { f: g4, d: 0.4 }, { f: c5, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: f5, d: 0.6, b: f2, chord: [a4, c5] }, { f: g4, d: 0.4 }, { f: d5, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: e5, d: 0.6, b: a2, chord: [c5, e5] }, { f: d5, d: 0.4 }, { f: c5, d: 0.5 }, { f: g4, d: 0.4 },
+      { f: a4, d: 0.5, b: f2, chord: [c4, f4] }, { f: b4, d: 0.4 }, { f: c5, d: 1.0 },
+
+      // ── SECTION B2: Warm Chime Resolution ──
+      { f: g5, d: 0.7, b: c3, chord: [e4, g4] }, { f: e5, d: 0.5 }, { f: d5, d: 0.5 }, { f: c5, d: 0.5 },
+      { f: d5, d: 0.6, b: g2, chord: [b3, d4] }, { f: e5, d: 0.5 }, { f: c5, d: 0.6, b: a2 }, { f: a4, d: 0.4 },
+      { f: g4, d: 0.5, b: f2 }, { f: e4, d: 0.4 }, { f: d4, d: 0.5 }, { f: c4, d: 1.2, b: c2 },
+
+      // ── SECTION C: Peaceful Fade ──
       { f: c5, d: 0.6, b: a2 }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: d5, d: 0.6, b: f2 }, { f: g4, d: 0.4 }, { f: f4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: c5, d: 0.6, b: c3 }, { f: b4, d: 0.4 }, { f: g4, d: 0.5 }, { f: e4, d: 0.4 },
-      { f: f4, d: 0.5, b: f2 }, { f: g4, d: 0.4 }, { f: c4, d: 0.9 }
+      { f: d5, d: 0.6, b: f2 }, { f: g4, d: 0.4 }, { f: c4, d: 1.8, b: c2, chord: [e4, g4, c5] }
     ];
 
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || (this.currentTrack !== 'subwoofer' && this.currentTrack !== 'minecraft')) return;
+    this.playSongSequence(fullSong, 'subwoofer', loopSelf);
+  }
 
-      if (step < sequence.length) {
-        const item = sequence[step];
-        this.synthPluck(item.f, item.d * 1.6, 'sine', this.musicMasterVol * 0.65, 1400);
-        if (item.b) {
-          this.synthPluck(item.b, 2.2, 'sine', this.musicMasterVol * 0.95, 220);
+  // ── 3. C418 - "WET HANDS" (FULL COMPLETE SONG ARRANGEMENT) ────────────────────
+  public playWetHandsFull(loopSelf = true): void {
+    const a3 = 220.00, cS4 = 277.18, e4 = 329.63, gS4 = 415.30, a4 = 440.00, b4 = 493.88, cS5 = 554.37, d5 = 587.33, e5 = 659.25;
+    const fS4 = 369.99, fS3 = 185.00, d3 = 146.83, d4 = 293.66, e3 = 164.81, gS3 = 207.65, b3 = 246.94, a2 = 110.00;
+
+    const fullSong: SongNote[] = [
+      // ── SECTION A: Wave 1 Arpeggios ──
+      { f: a3,  d: 0.4, b: a2 }, { f: cS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: gS4, d: 0.5 },
+      { f: a4,  d: 0.6 },        { f: gS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: cS4, d: 0.5 },
+      { f: fS3, d: 0.4, b: fS3 / 2 }, { f: a3, d: 0.4 }, { f: cS4, d: 0.4 }, { f: e4, d: 0.5 },
+      { f: fS4, d: 0.6 },        { f: e4,  d: 0.4 }, { f: cS4, d: 0.4 }, { f: a3,  d: 0.7 },
+
+      // ── SECTION A2: Wave 2 (D Major to E Major) ──
+      { f: d3,  d: 0.4, b: d3 / 2 }, { f: fS3, d: 0.4 }, { f: a3,  d: 0.4 }, { f: cS4, d: 0.5 },
+      { f: d4,  d: 0.6 },        { f: cS4, d: 0.4 }, { f: a3,  d: 0.4 }, { f: fS3, d: 0.5 },
+      { f: e3,  d: 0.4, b: e3 / 2 }, { f: gS3, d: 0.4 }, { f: b3,  d: 0.4 }, { f: d4,  d: 0.5 },
+      { f: e4,  d: 0.6 },        { f: d4,  d: 0.4 }, { f: b3,  d: 0.4 }, { f: gS3, d: 0.7 },
+
+      // ── SECTION B: Main High Melodic Piano Line ──
+      { f: a3,  d: 0.4, b: a2 }, { f: e4,  d: 0.4 }, { f: a4,  d: 0.5 }, { f: b4,  d: 0.4 },
+      { f: cS5, d: 0.7, b: a2 }, { f: b4,  d: 0.4 }, { f: a4,  d: 0.4 }, { f: gS4, d: 0.5 },
+      { f: fS4, d: 0.6, b: fS3 }, { f: cS4, d: 0.4 }, { f: fS4, d: 0.4 }, { f: gS4, d: 0.5 },
+      { f: a4,  d: 0.7 },        { f: gS4, d: 0.4 }, { f: fS4, d: 0.4 }, { f: e4,  d: 0.6 },
+
+      // ── SECTION B2: Emotional High Climax ──
+      { f: d4,  d: 0.4, b: d3 }, { f: fS4, d: 0.4 }, { f: a4,  d: 0.5 }, { f: b4,  d: 0.4 },
+      { f: cS5, d: 0.6, b: d3 }, { f: d5,  d: 0.5 }, { f: cS5, d: 0.5 }, { f: b4,  d: 0.4 },
+      { f: a4,  d: 0.7, b: a2 }, { f: e4,  d: 0.4 }, { f: cS4, d: 0.4 }, { f: b3,  d: 0.5 },
+      { f: a3,  d: 1.4, b: a2 },
+
+      // ── SECTION C: Floating Outro Arpeggio ──
+      { f: a3,  d: 0.4, b: a2 }, { f: cS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: a4,  d: 0.5 },
+      { f: cS5, d: 0.6 },        { f: e5,  d: 0.7 }, { f: cS5, d: 0.5 }, { f: a4,  d: 0.4 },
+      { f: e4,  d: 0.5 },        { f: cS4, d: 0.5 }, { f: a3,  d: 2.0, b: a2 }
+    ];
+
+    this.playSongSequence(fullSong, 'wethands', loopSelf);
+  }
+
+  // ── 4. C418 - "MICE ON VENUS" (FULL COMPLETE SONG ARRANGEMENT) ────────────────
+  public playMiceOnVenusFull(loopSelf = true): void {
+    const d4 = 293.66, fS4 = 369.99, a4 = 440.00, b4 = 493.88, e4 = 329.63, g4 = 392.00, cS4 = 277.18;
+    const d5 = 587.33, e5 = 659.25, fS5 = 739.99, g5 = 783.99, d3 = 146.83, g3 = 196.00, b2 = 123.47, a2 = 110.00;
+
+    const fullSong: SongNote[] = [
+      // ── SECTION A: Quiet Piano Intro ──
+      { f: d4, d: 0.5, b: d3 }, { f: fS4, d: 0.5 }, { f: a4, d: 0.6 }, { f: b4, d: 0.6 },
+      { f: a4, d: 0.5 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.7, b: g3 }, { f: d4, d: 0.5 },
+      { f: fS4, d: 0.5 }, { f: g4, d: 0.6 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.5, b: b2 },
+      { f: d4, d: 0.6 }, { f: cS4, d: 0.5 }, { f: d4, d: 1.2, b: d3 },
+
+      // ── SECTION A2: Piano Response Phrase ──
+      { f: d4, d: 0.5, b: d3 }, { f: fS4, d: 0.5 }, { f: a4, d: 0.5 }, { f: d5, d: 0.7, b: a2 },
+      { f: cS5, d: 0.5 }, { f: b4, d: 0.5 }, { f: a4, d: 0.6, b: g3 }, { f: fS4, d: 0.5 },
+      { f: g4, d: 0.5 }, { f: a4, d: 0.6 }, { f: g4, d: 0.5 }, { f: fS4, d: 0.5, b: b2 },
+      { f: e4, d: 0.6 }, { f: d4, d: 1.4, b: d3 },
+
+      // ── SECTION B: Soaring Synth Swell ──
+      { f: fS4, d: 0.5, b: b2 }, { f: a4, d: 0.5 }, { f: d5, d: 0.6 }, { f: e5, d: 0.6, b: g3 },
+      { f: fS5, d: 0.8 }, { f: e5, d: 0.5 }, { f: d5, d: 0.6, b: d3 }, { f: b4, d: 0.5 },
+      { f: a4, d: 0.5 }, { f: b4, d: 0.6, b: a2 }, { f: d5, d: 0.6 }, { f: b4, d: 0.5 },
+      { f: a4, d: 0.6 }, { f: fS4, d: 0.5 }, { f: e4, d: 1.2, b: g3 },
+
+      // ── SECTION B2: Grand Climax ──
+      { f: fS4, d: 0.5, b: g3 }, { f: a4, d: 0.5 }, { f: d5, d: 0.6 }, { f: e5, d: 0.6, b: a2 },
+      { f: fS5, d: 0.7 }, { f: g5, d: 0.6 }, { f: fS5, d: 0.6, b: d3 }, { f: e5, d: 0.5 },
+      { f: d5, d: 0.6 }, { f: b4, d: 0.5, b: b2 }, { f: a4, d: 0.6 }, { f: fS4, d: 0.5 },
+      { f: e4, d: 0.6 }, { f: d4, d: 1.6, b: d3 },
+
+      // ── SECTION C: Reflective Piano Outro ──
+      { f: a4, d: 0.6, b: d3 }, { f: fS4, d: 0.5 }, { f: d4, d: 0.5 }, { f: e4, d: 0.6, b: g3 },
+      { f: fS4, d: 0.6 }, { f: d4, d: 0.5 }, { f: b3, d: 0.6, b: b2 }, { f: a3, d: 0.5 },
+      { f: d4, d: 2.2, b: d3, chord: [fS3, a3, d4] }
+    ];
+
+    this.playSongSequence(fullSong, 'miceonvenus', loopSelf);
+  }
+
+  // ── 5. C418 - "CAT" (FULL COMPLETE MUSIC DISC SONG) ───────────────────────────
+  public playCatDiscFull(loopSelf = true): void {
+    const c5 = 523.25, g4 = 392.00, d5 = 587.33, e5 = 659.25, a4 = 440.00, e4 = 329.63, c4 = 261.63, g5 = 783.99, f5 = 698.46;
+    const a3 = 220.00, f3 = 174.61, g3 = 196.00, c3 = 130.81, e3 = 164.81;
+
+    const fullSong: SongNote[] = [
+      // ── SECTION A: The Iconic Opening Jukebox Groove ──
+      { f: c5, d: 0.25, b: c3 }, { f: g4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 },
+      { f: e5, d: 0.4, b: a3 }, { f: d5, d: 0.25 }, { f: c5, d: 0.35 }, { f: a4, d: 0.25 },
+      { f: g4, d: 0.3, b: f3 }, { f: e4, d: 0.25 }, { f: g4, d: 0.25 }, { f: a4, d: 0.35 },
+      { f: c5, d: 0.35, b: g3 }, { f: a4, d: 0.25 }, { f: g4, d: 0.5 },
+
+      // ── SECTION A2: Groove Variation with High G5 ──
+      { f: c5, d: 0.25, b: c3 }, { f: g4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 },
+      { f: e5, d: 0.35, b: a3 }, { f: g5, d: 0.3 }, { f: e5, d: 0.3 }, { f: d5, d: 0.25 },
+      { f: c5, d: 0.35, b: f3 }, { f: a4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.3 },
+      { f: c5, d: 0.6, b: c3 },
+
+      // ── SECTION B: The Funky Bridge / 16-Bit Jam ──
+      { f: e5, d: 0.3, b: e3 }, { f: e5, d: 0.25 }, { f: d5, d: 0.25 }, { f: c5, d: 0.25 },
+      { f: d5, d: 0.3, b: a3 }, { f: e5, d: 0.35 }, { f: g4, d: 0.25 }, { f: a4, d: 0.25 },
+      { f: c5, d: 0.3, b: f3 }, { f: d5, d: 0.25 }, { f: e5, d: 0.35 }, { f: d5, d: 0.25 },
+      { f: c5, d: 0.3, b: g3 }, { f: a4, d: 0.25 }, { f: g4, d: 0.45 },
+
+      // ── SECTION B2: Bridge Climax with High F5 ──
+      { f: a4, d: 0.25, b: f3 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 }, { f: e5, d: 0.3 },
+      { f: f5, d: 0.35, b: g3 }, { f: e5, d: 0.25 }, { f: d5, d: 0.25 }, { f: c5, d: 0.25 },
+      { f: d5, d: 0.3, b: c3 }, { f: e5, d: 0.3 }, { f: c5, d: 0.3, b: a3 }, { f: a4, d: 0.25 },
+      { f: g4, d: 0.3, b: g3 }, { f: c5, d: 0.7, b: c3 },
+
+      // ── SECTION C: Outro Groove Flourish ──
+      { f: c5, d: 0.25, b: c3 }, { f: e5, d: 0.25 }, { f: g5, d: 0.3 }, { f: e5, d: 0.25 },
+      { f: c5, d: 0.25, b: g3 }, { f: g4, d: 0.25 }, { f: e4, d: 0.3 }, { f: c4, d: 0.9, b: c3 }
+    ];
+
+    this.playSongSequence(fullSong, 'cat', loopSelf);
+  }
+
+  // ── 6. THE WELLERMAN (FULL 3-VERSE & CHORUS SEA SHANTY) ───────────────────────
+  public playWellermanFull(): void {
+    const c4 = 261.63, eb4 = 311.13, g4 = 392.00, f4 = 349.23, d4 = 293.66, ab4 = 415.30, bb3 = 233.08, c3 = 130.81, g3 = 196.00, ab3 = 207.65, eb3 = 155.56;
+
+    const fullSong: SongNote[] = [
+      // ── VERSE 1: "There once was a ship that put to sea..." ──
+      { f: c4,  d: 0.3, b: c3 }, { f: c4,  d: 0.3 }, { f: c4,  d: 0.3 }, { f: eb4, d: 0.4 },
+      { f: g4,  d: 0.4, b: g3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.4 },
+      { f: f4,  d: 0.3, b: bb3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: d4,  d: 0.3 },
+      { f: d4,  d: 0.3 }, { f: f4,  d: 0.4, b: c3 }, { f: g4,  d: 0.4 }, { f: ab4, d: 0.4 },
+      { f: g4,  d: 0.3, b: g3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 },
+      { f: c4,  d: 0.6, b: c3 },
+
+      // ── CHORUS 1: "Soon may the Wellerman come..." ──
+      { f: ab4, d: 0.35, b: ab3 }, { f: g4,  d: 0.3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.35, b: eb3 },
+      { f: d4,  d: 0.3 }, { f: c4,  d: 0.35, b: c3 }, { f: g3,  d: 0.3 }, { f: g3,  d: 0.3 },
+      { f: c4,  d: 0.35, b: c3 }, { f: eb4, d: 0.3 }, { f: g4,  d: 0.4, b: g3 }, { f: f4,  d: 0.3 },
+      { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: c4,  d: 0.6, b: c3 },
+
+      // ── VERSE 2: "She'd not been two weeks from down..." ──
+      { f: c4,  d: 0.3, b: c3 }, { f: c4,  d: 0.3 }, { f: c4,  d: 0.3 }, { f: eb4, d: 0.4 },
+      { f: g4,  d: 0.4, b: g3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.4 },
+      { f: f4,  d: 0.3, b: bb3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: d4,  d: 0.3 },
+      { f: d4,  d: 0.3 }, { f: f4,  d: 0.4, b: c3 }, { f: g4,  d: 0.4 }, { f: ab4, d: 0.4 },
+      { f: g4,  d: 0.3, b: g3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 },
+      { f: c4,  d: 0.6, b: c3 },
+
+      // ── CHORUS 2: Full Swelling Shanty Chorus ──
+      { f: ab4, d: 0.35, b: ab3 }, { f: g4,  d: 0.3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.35, b: eb3 },
+      { f: d4,  d: 0.3 }, { f: c4,  d: 0.35, b: c3 }, { f: g3,  d: 0.3 }, { f: g3,  d: 0.3 },
+      { f: c4,  d: 0.35, b: c3 }, { f: eb4, d: 0.3 }, { f: g4,  d: 0.4, b: g3 }, { f: f4,  d: 0.3 },
+      { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: c4,  d: 0.6, b: c3 },
+
+      // ── OUTRO: Shanty Hornpipe Finish ──
+      { f: g3,  d: 0.25, b: c3 }, { f: c4,  d: 0.25 }, { f: eb4, d: 0.25 }, { f: g4,  d: 0.3 },
+      { f: c5,  d: 0.4, b: c3 },  { f: g4,  d: 0.25 }, { f: eb4, d: 0.25 }, { f: c4,  d: 0.8, b: c3 }
+    ];
+
+    this.playSongSequence(fullSong, 'wellerman', true);
+  }
+
+  // ── 7. KEVIN MACLEOD - "SNEAKY SNITCH" (FULL EXTENDED ARRANGEMENT) ────────────
+  public playSneakySnitchFull(): void {
+    const c4 = 261.63, d4 = 293.66, eb4 = 311.13, g3 = 196.00, b3 = 246.94, f4 = 349.23, g4 = 392.00, ab4 = 415.30, c5 = 523.25, b4 = 493.88;
+    const c3 = 130.81, g2 = 98.00, b2 = 123.47, ab3 = 207.65;
+
+    const fullSong: SongNote[] = [
+      // ── INTRO: Stealth Tiptoe Bass ──
+      { f: g3, d: 0.2, b: c3 }, { f: c4, d: 0.2 }, { f: g3, d: 0.2 }, { f: c4, d: 0.2 },
+      { f: b3, d: 0.2, b: g2 }, { f: d4, d: 0.2 }, { f: b3, d: 0.2 }, { f: d4, d: 0.2 },
+
+      // ── SECTION A: Main Mischief Theme ──
+      { f: c4, d: 0.2, b: c3 }, { f: d4, d: 0.2 }, { f: eb4, d: 0.3, b: c3 }, { f: c4, d: 0.2 },
+      { f: g3, d: 0.2 }, { f: c4, d: 0.2 }, { f: eb4, d: 0.3, b: c3 }, { f: d4, d: 0.2 },
+      { f: b3, d: 0.2, b: g2 }, { f: g3, d: 0.2 }, { f: b3, d: 0.2, b: b2 }, { f: d4, d: 0.3 },
+      { f: c4, d: 0.2 }, { f: g3, d: 0.2 }, { f: c4, d: 0.2, b: c3 }, { f: eb4, d: 0.2 },
+      { f: f4, d: 0.2 }, { f: g4, d: 0.3, b: g3 }, { f: ab4, d: 0.2 }, { f: g4, d: 0.2 },
+      { f: f4, d: 0.2 }, { f: eb4, d: 0.2 }, { f: d4, d: 0.2 }, { f: c4, d: 0.5, b: c3 },
+
+      // ── SECTION B: Tension Escalation & Chromatic Staccato ──
+      { f: g4, d: 0.25, b: g3 }, { f: g4, d: 0.2 }, { f: f4, d: 0.2 }, { f: eb4, d: 0.2 },
+      { f: f4, d: 0.25, b: c3 }, { f: g4, d: 0.3 }, { f: c4, d: 0.2 }, { f: d4, d: 0.2 },
+      { f: eb4, d: 0.25, b: c3 }, { f: d4, d: 0.2 }, { f: c4, d: 0.2 }, { f: b3, d: 0.3, b: g2 },
+      { f: g3, d: 0.2 }, { f: ab3, d: 0.2 }, { f: a3, d: 0.2 }, { f: b3, d: 0.3, b: b2 },
+      { f: c4, d: 0.2, b: c3 }, { f: d4, d: 0.2 }, { f: eb4, d: 0.2 }, { f: f4, d: 0.2 },
+      { f: g4, d: 0.3, b: g3 }, { f: ab4, d: 0.2 }, { f: g4, d: 0.2 }, { f: f4, d: 0.2 },
+      { f: eb4, d: 0.2 }, { f: d4, d: 0.2 }, { f: c4, d: 0.6, b: c3 },
+
+      // ── SECTION C: High Comic Climax & Tiptoe Resolve ──
+      { f: c5, d: 0.25, b: c3 }, { f: b4, d: 0.2 }, { f: c5, d: 0.25 }, { f: ab4, d: 0.2, b: ab3 },
+      { f: g4, d: 0.2 }, { f: f4, d: 0.2 }, { f: eb4, d: 0.2, b: c3 }, { f: d4, d: 0.2 },
+      { f: c4, d: 0.2 }, { f: b3, d: 0.2, b: g2 }, { f: c4, d: 0.2 }, { f: d4, d: 0.2 },
+      { f: eb4, d: 0.25, b: c3 }, { f: d4, d: 0.2 }, { f: c4, d: 0.2 }, { f: g3, d: 0.2 },
+      { f: c4, d: 0.8, b: c3 }
+    ];
+
+    this.playSongSequence(fullSong, 'sneakysnitch', true);
+  }
+
+  // ── 8. BEETHOVEN - "ODE TO JOY" (FULL COMPLETE 4-PART SYMPHONY MOVEMENT) ──────
+  public playOdeToJoyFull(): void {
+    const e4 = 329.63, f4 = 349.23, g4 = 392.00, d4 = 293.66, c4 = 261.63, g3 = 196.00, a4 = 440.00;
+    const c3 = 130.81, g2 = 98.00, a3 = 220.00, f3 = 174.61;
+
+    const fullSong: SongNote[] = [
+      // ── PART 1: Main Statement ──
+      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
+      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
+      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
+      { f: e4, d: 0.5 },  { f: d4, d: 0.2 },  { f: d4, d: 0.6, b: g3, chord: [b3, d4] },
+
+      // ── PART 2: Statement Reprise with Resolution ──
+      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
+      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
+      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
+      { f: d4, d: 0.5 },  { f: c4, d: 0.2 },  { f: c4, d: 0.7, b: c3, chord: [e4, g4] },
+
+      // ── PART 3: Middle Development & Bridge ──
+      { f: d4, d: 0.35, b: g3 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: c3 }, { f: c4, d: 0.35 },
+      { f: d4, d: 0.35, b: g3 }, { f: e4, d: 0.2 },  { f: f4, d: 0.2 }, { f: e4, d: 0.35, b: c3 }, { f: c4, d: 0.35 },
+      { f: d4, d: 0.35, b: g3 }, { f: e4, d: 0.2 },  { f: f4, d: 0.2 }, { f: e4, d: 0.35, b: c3 }, { f: d4, d: 0.35 },
+      { f: c4, d: 0.35, b: f3 }, { f: d4, d: 0.35 }, { f: g3, d: 0.7, b: g2, chord: [d4, f4] },
+
+      // ── PART 4: Grand Symphonic Reprise & Coda ──
+      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
+      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
+      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
+      { f: d4, d: 0.5 },  { f: c4, d: 0.2 },  { f: c4, d: 0.7, b: c3 },
+
+      // Grand Coda Fanfare
+      { f: g4, d: 0.35, b: c3 }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3 },
+      { f: a4, d: 0.35, b: f3 }, { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3 },
+      { f: d4, d: 0.35, b: g3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: c3 },
+      { f: d4, d: 0.5, b: g3 },  { f: c4, d: 0.2 },  { f: c4, d: 1.8, b: c3, chord: [e4, g4, c5] }
+    ];
+
+    this.playSongSequence(fullSong, 'odetojoy', true);
+  }
+
+  // Helper: Play Full Polyphonic Song Sequence with Rich Filters & Dynamics
+  private playSongSequence(song: SongNote[], trackId: MusicTrack, loopSelf = true): void {
+    let step = 0;
+
+    const playNext = () => {
+      if (!this.enabled || (this.currentTrack !== trackId && this.currentTrack !== 'minecraft')) return;
+
+      if (step < song.length) {
+        const item = song[step];
+        const oscType = item.type || (trackId === 'wellerman' || trackId === 'odetojoy' ? 'square' : 'triangle');
+        
+        // 1. Lead Melody Note
+        this.synthPluck(item.f, item.d * 1.6, oscType, this.musicMasterVol * 0.65, 1200);
+
+        // 2. Polyphonic Chord Voices
+        if (item.chord) {
+          item.chord.forEach((chordFreq, i) => {
+            setTimeout(() => {
+              if (this.currentTrack === trackId || this.currentTrack === 'minecraft') {
+                this.synthPluck(chordFreq, item.d * 1.8, 'sine', this.musicMasterVol * 0.35, 900);
+              }
+            }, i * 20);
+          });
         }
+
+        // 3. Deep Bassline Voice
+        if (item.b) {
+          this.synthPluck(item.b, item.d * 2.2, 'sine', this.musicMasterVol * 0.9, 300);
+        }
+
         step++;
         this.musicTimer = setTimeout(playNext, item.d * 850);
       } else {
@@ -474,211 +803,14 @@ export class SoundSynthesizer {
     playNext();
   }
 
-  // 3. C418 - "Wet Hands"
-  public playWetHandsLoop(loopSelf = true): void {
-    const a3 = 220.00, cS4 = 277.18, e4 = 329.63, gS4 = 415.30, a4 = 440.00, fS4 = 369.99, fS3 = 185.00, d3 = 146.83;
-    const arp = [
-      { f: a3, d: 0.4, b: a3 / 2 }, { f: cS4, d: 0.4 }, { f: e4, d: 0.4 }, { f: gS4, d: 0.5 },
-      { f: a4, d: 0.6 }, { f: gS4, d: 0.4 }, { f: e4, d: 0.4 }, { f: cS4, d: 0.5 },
-      { f: fS3, d: 0.4, b: fS3 / 2 }, { f: a3, d: 0.4 }, { f: cS4, d: 0.4 }, { f: e4, d: 0.5 },
-      { f: fS4, d: 0.6 }, { f: e4, d: 0.4 }, { f: cS4, d: 0.4 }, { f: a3, d: 0.7 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || (this.currentTrack !== 'wethands' && this.currentTrack !== 'minecraft')) return;
-
-      if (step < arp.length) {
-        const item = arp[step];
-        this.synthPluck(item.f, item.d * 1.5, 'triangle', this.musicMasterVol * 0.6, 1100);
-        if (item.b) {
-          this.synthPluck(item.b, 2.5, 'sine', this.musicMasterVol * 0.8, 300);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 750);
-      } else {
-        if (loopSelf) {
-          step = 0;
-          this.musicTimer = setTimeout(playNext, 1800);
-        } else {
-          this.musicTimer = setTimeout(() => this.playMinecraftSuite(), 1800);
-        }
-      }
-    };
-
-    playNext();
-  }
-
-  // 4. C418 - "Mice on Venus"
-  public playMiceOnVenusLoop(loopSelf = true): void {
-    const d4 = 293.66, fS4 = 369.99, a4 = 440.00, b4 = 493.88, e4 = 329.63, g4 = 392.00, cS4 = 277.18;
-    const melody = [
-      { f: d4, d: 0.5, b: 146.83 }, { f: fS4, d: 0.5 }, { f: a4, d: 0.6 }, { f: b4, d: 0.6 },
-      { f: a4, d: 0.5 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.7, b: 196.00 }, { f: d4, d: 0.5 },
-      { f: fS4, d: 0.5 }, { f: g4, d: 0.6 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.5, b: 123.47 },
-      { f: d4, d: 0.6 }, { f: cS4, d: 0.5 }, { f: d4, d: 1.0, b: 146.83 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || (this.currentTrack !== 'miceonvenus' && this.currentTrack !== 'minecraft')) return;
-
-      if (step < melody.length) {
-        const item = melody[step];
-        this.synthPluck(item.f, item.d * 1.5, 'sine', this.musicMasterVol * 0.7, 1200);
-        if (item.b) {
-          this.synthPluck(item.b, 2.2, 'triangle', this.musicMasterVol * 0.8, 400);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 800);
-      } else {
-        if (loopSelf) {
-          step = 0;
-          this.musicTimer = setTimeout(playNext, 2000);
-        } else {
-          this.musicTimer = setTimeout(() => this.playMinecraftSuite(), 2000);
-        }
-      }
-    };
-
-    playNext();
-  }
-
-  // 5. C418 - "Cat" (Green Music Disc)
-  public playCatDiscLoop(loopSelf = true): void {
-    const c5 = 523.25, g4 = 392.00, d5 = 587.33, e5 = 659.25, a4 = 440.00, e4 = 329.63, c4 = 261.63;
-    const groove = [
-      { f: c5, d: 0.25, b: c4 }, { f: g4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 },
-      { f: e5, d: 0.4, b: a4 / 2 }, { f: d5, d: 0.25 }, { f: c5, d: 0.35 }, { f: a4, d: 0.25 },
-      { f: g4, d: 0.3, b: e4 }, { f: e4, d: 0.25 }, { f: g4, d: 0.25 }, { f: a4, d: 0.35 },
-      { f: c5, d: 0.35, b: c4 }, { f: a4, d: 0.25 }, { f: g4, d: 0.5 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || (this.currentTrack !== 'cat' && this.currentTrack !== 'minecraft')) return;
-
-      if (step < groove.length) {
-        const item = groove[step];
-        this.synthPluck(item.f, 0.2, 'square', this.musicMasterVol * 0.5, 1600);
-        if (item.b) {
-          this.synthPluck(item.b, 0.3, 'triangle', this.musicMasterVol * 0.75, 500);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 600);
-      } else {
-        if (loopSelf) {
-          step = 0;
-          this.musicTimer = setTimeout(playNext, 1200);
-        } else {
-          this.musicTimer = setTimeout(() => this.playMinecraftSuite(), 1200);
-        }
-      }
-    };
-
-    playNext();
-  }
-
-  // 6. The Wellerman (19th-Century Sea Shanty)
-  public playWellermanLoop(): void {
-    const c4 = 261.63, eb4 = 311.13, g4 = 392.00, f4 = 349.23, d4 = 293.66, ab4 = 415.30, bb3 = 233.08, c3 = 130.81;
-    const melody = [
-      { f: c4, d: 0.3, b: c3 }, { f: c4, d: 0.3 }, { f: c4, d: 0.3 }, { f: eb4, d: 0.4 },
-      { f: g4, d: 0.4, b: g4 / 2 }, { f: g4, d: 0.3 }, { f: g4, d: 0.3 }, { f: g4, d: 0.4 },
-      { f: f4, d: 0.3, b: bb3 }, { f: eb4, d: 0.3 }, { f: d4, d: 0.3 }, { f: d4, d: 0.3 },
-      { f: d4, d: 0.3 }, { f: f4, d: 0.4, b: c3 }, { f: g4, d: 0.4 }, { f: ab4, d: 0.4 },
-      { f: g4, d: 0.3, b: g4 / 2 }, { f: f4, d: 0.3 }, { f: eb4, d: 0.3 }, { f: d4, d: 0.3 },
-      { f: c4, d: 0.6, b: c3 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || this.currentTrack !== 'wellerman') return;
-      if (step < melody.length) {
-        const item = melody[step];
-        this.synthPluck(item.f, item.d * 1.1, 'square', this.musicMasterVol * 0.55, 1400);
-        if (item.b) {
-          this.synthPluck(item.b, item.d * 1.5, 'triangle', this.musicMasterVol * 0.8, 450);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 600);
-      } else {
-        step = 0;
-        this.musicTimer = setTimeout(playNext, 1200);
-      }
-    };
-    playNext();
-  }
-
-  // 7. Kevin MacLeod - "Sneaky Snitch" (CC-BY 4.0)
-  public playSneakySnitchLoop(): void {
-    const c4 = 261.63, d4 = 293.66, eb4 = 311.13, g3 = 196.00, b3 = 246.94, f4 = 349.23, g4 = 392.00, ab4 = 415.30;
-    const notes = [
-      { f: c4, d: 0.2 }, { f: d4, d: 0.2 }, { f: eb4, d: 0.3, b: 130.81 }, { f: c4, d: 0.2 },
-      { f: g3, d: 0.2 }, { f: c4, d: 0.2 }, { f: eb4, d: 0.3, b: 130.81 }, { f: d4, d: 0.2 },
-      { f: b3, d: 0.2 }, { f: g3, d: 0.2 }, { f: b3, d: 0.2, b: 123.47 }, { f: d4, d: 0.3 },
-      { f: c4, d: 0.2 }, { f: g3, d: 0.2 }, { f: c4, d: 0.2, b: 130.81 }, { f: eb4, d: 0.2 },
-      { f: f4, d: 0.2 }, { f: g4, d: 0.3, b: 196.00 }, { f: ab4, d: 0.2 }, { f: g4, d: 0.2 },
-      { f: f4, d: 0.2 }, { f: eb4, d: 0.2 }, { f: d4, d: 0.2 }, { f: c4, d: 0.5, b: 130.81 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || this.currentTrack !== 'sneakysnitch') return;
-      if (step < notes.length) {
-        const item = notes[step];
-        this.synthPluck(item.f, 0.16, 'triangle', this.musicMasterVol * 0.65, 1500);
-        if (item.b) {
-          this.synthPluck(item.b, 0.25, 'sine', this.musicMasterVol * 0.7, 300);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 650);
-      } else {
-        step = 0;
-        this.musicTimer = setTimeout(playNext, 1000);
-      }
-    };
-    playNext();
-  }
-
-  // 8. Beethoven - "Ode to Joy"
-  public playOdeToJoyLoop(): void {
-    const e4 = 329.63, f4 = 349.23, g4 = 392.00, d4 = 293.66, c4 = 261.63, g3 = 196.00, c3 = 130.81;
-    const theme = [
-      { f: e4, d: 0.35, b: c3 }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3 },
-      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3 }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
-      { f: e4, d: 0.5 },  { f: d4, d: 0.2 },  { f: d4, d: 0.6, b: g3 },
-      { f: e4, d: 0.35, b: c3 }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3 },
-      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3 }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
-      { f: d4, d: 0.5 },  { f: c4, d: 0.2 },  { f: c4, d: 0.7, b: c3 }
-    ];
-
-    let step = 0;
-    const playNext = () => {
-      if (!this.enabled || this.currentTrack !== 'odetojoy') return;
-      if (step < theme.length) {
-        const item = theme[step];
-        this.synthPluck(item.f, item.d * 1.3, 'square', this.musicMasterVol * 0.5, 1200);
-        if (item.b) {
-          this.synthPluck(item.b, item.d * 1.6, 'triangle', this.musicMasterVol * 0.8, 400);
-        }
-        step++;
-        this.musicTimer = setTimeout(playNext, item.d * 700);
-      } else {
-        step = 0;
-        this.musicTimer = setTimeout(playNext, 1500);
-      }
-    };
-    playNext();
-  }
-
-  // 9. Cyberspace
+  // ── 9. CYBERSPACE (EXTENDED PROCEDURAL ARPEGGIOS) ───────────────────────────
   private playCyberspaceLoop(): void {
-    const scale = [220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25];
-    const bass = [110.00, 110.00, 130.81, 146.83, 164.81, 164.81, 146.83, 130.81];
-    const pattern = [0, 2, 4, 7, 5, 3, 4, 1, 0, 3, 5, 7, 6, 4, 2, 1];
+    const scale = [220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25, 783.99];
+    const bass = [110.00, 110.00, 130.81, 146.83, 164.81, 164.81, 146.83, 130.81, 98.00, 110.00];
+    const pattern = [
+      0, 2, 4, 7, 5, 3, 4, 1, 0, 3, 5, 7, 6, 4, 2, 1,
+      2, 4, 6, 8, 7, 5, 3, 1, 0, 4, 7, 5, 3, 2, 1, 0
+    ];
     let step = 0;
 
     const tick = () => {
@@ -686,40 +818,43 @@ export class SoundSynthesizer {
       const noteFreq = scale[pattern[step % pattern.length] % scale.length];
       const bassFreq = bass[Math.floor(step / 2) % bass.length];
 
-      this.synthPluck(noteFreq, 0.12, 'square', this.musicMasterVol * 0.45, 1200);
+      this.synthPluck(noteFreq, 0.14, 'square', this.musicMasterVol * 0.45, 1200);
       if (step % 2 === 0) {
-        this.synthPluck(bassFreq, 0.28, 'triangle', this.musicMasterVol * 0.7, 400);
+        this.synthPluck(bassFreq, 0.32, 'triangle', this.musicMasterVol * 0.7, 400);
       }
       step++;
-      this.musicTimer = setTimeout(tick, 180);
+      this.musicTimer = setTimeout(tick, 175);
     };
     tick();
   }
 
-  // 10. Neon
+  // ── 10. NEON (EXTENDED 16-BIT LO-FI JAZZ CHORD PROGRESSIONS) ────────────────
   private playNeonLoop(): void {
-    const chords = [
-      [146.83, 220.00, 261.63, 329.63, 392.00],
-      [196.00, 246.94, 293.66, 349.23, 440.00],
-      [130.81, 196.00, 246.94, 329.63, 392.00],
-      [220.00, 261.63, 329.63, 392.00, 523.25]
+    const progressions = [
+      [146.83, 220.00, 261.63, 329.63, 392.00], // Dm9
+      [196.00, 246.94, 293.66, 349.23, 440.00], // G13
+      [130.81, 196.00, 246.94, 329.63, 392.00], // Cmaj9
+      [220.00, 261.63, 329.63, 392.00, 523.25], // Am7
+      [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj7#11
+      [164.81, 207.65, 246.94, 329.63, 392.00], // E7b9
+      [220.00, 261.63, 329.63, 392.00, 493.88]  // Am9
     ];
     let chordIdx = 0;
     let tickCount = 0;
 
     const tick = () => {
       if (!this.enabled || this.currentTrack !== 'neon') return;
-      const currentChord = chords[chordIdx % chords.length];
+      const currentChord = progressions[chordIdx % progressions.length];
 
       currentChord.forEach((freq, i) => {
         setTimeout(() => {
           if (this.currentTrack === 'neon') {
-            this.synthPluck(freq, 0.45, 'triangle', this.musicMasterVol * 0.35, 900);
+            this.synthPluck(freq, 0.55, 'triangle', this.musicMasterVol * 0.35, 900);
           }
         }, i * 35);
       });
 
-      this.synthPluck(currentChord[0] / 2, 0.6, 'sine', this.musicMasterVol * 0.9, 250);
+      this.synthPluck(currentChord[0] / 2, 0.7, 'sine', this.musicMasterVol * 0.9, 250);
       tickCount++;
       if (tickCount % 4 === 0) chordIdx++;
       this.musicTimer = setTimeout(tick, 600);
@@ -727,21 +862,21 @@ export class SoundSynthesizer {
     tick();
   }
 
-  // 11. Ambient
+  // ── 11. DEEP TERMINAL AMBIENT ───────────────────────────────────────────────
   private playAmbientLoop(): void {
-    const droneFreqs = [110.00, 164.81, 220.00, 329.63];
-    const chimeScale = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51, 1567.98];
+    const droneFreqs = [110.00, 146.83, 164.81, 220.00, 293.66, 329.63];
+    const chimeScale = [523.25, 659.25, 783.99, 880.00, 987.77, 1046.50, 1318.51, 1567.98];
 
     const droneTick = () => {
       if (!this.enabled || this.currentTrack !== 'ambient') return;
       const f = droneFreqs[Math.floor(Math.random() * droneFreqs.length)];
-      this.synthPluck(f, 2.5, 'sine', this.musicMasterVol * 0.6, 600);
+      this.synthPluck(f, 3.2, 'sine', this.musicMasterVol * 0.6, 600);
 
-      if (Math.random() > 0.35) {
+      if (Math.random() > 0.3) {
         const chime = chimeScale[Math.floor(Math.random() * chimeScale.length)];
         setTimeout(() => {
           if (this.currentTrack === 'ambient') {
-            this.synthPluck(chime, 1.2, 'sine', this.musicMasterVol * 0.35, 2400);
+            this.synthPluck(chime, 1.4, 'sine', this.musicMasterVol * 0.35, 2400);
           }
         }, 300 + Math.random() * 800);
       }
@@ -750,7 +885,7 @@ export class SoundSynthesizer {
     droneTick();
   }
 
-  // 12. Generative Endless Mode
+  // ── 12. GENERATIVE ENDLESS RETRO MODE ───────────────────────────────────────
   private playGenerativeLoop(): void {
     const rootNotes = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00];
     let baseRoot = rootNotes[Math.floor(Math.random() * rootNotes.length)];
@@ -758,7 +893,7 @@ export class SoundSynthesizer {
 
     const tick = () => {
       if (!this.enabled || this.currentTrack !== 'generative') return;
-      const pentatonicSteps = [0, 2, 4, 7, 9, 12, 14, 16, 19];
+      const pentatonicSteps = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
       const step = pentatonicSteps[Math.floor(Math.random() * pentatonicSteps.length)];
       const freq = baseRoot * Math.pow(2, step / 12);
 
@@ -768,7 +903,7 @@ export class SoundSynthesizer {
 
       if (interval++ % 16 === 0) {
         baseRoot = rootNotes[Math.floor(Math.random() * rootNotes.length)];
-        this.synthPluck(baseRoot / 2, 1.0, 'sine', this.musicMasterVol * 0.8, 300);
+        this.synthPluck(baseRoot / 2, 1.2, 'sine', this.musicMasterVol * 0.8, 300);
       }
       const nextDelay = [160, 240, 320, 480][Math.floor(Math.random() * 4)];
       this.musicTimer = setTimeout(tick, nextDelay);
@@ -823,7 +958,7 @@ export class SoundSynthesizer {
     this.playMelody(notes);
   }
 
-  // Helper synth envelope voice
+  // Helper synth envelope voice with polyphony support
   private synthPluck(freq: number, dur: number, type: OscillatorType, volume: number, cutoff = 1200): void {
     try {
       const ctx = this.initContext();
@@ -842,7 +977,7 @@ export class SoundSynthesizer {
       filter.Q.setValueAtTime(2.0, now);
 
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(volume, now + 0.02);
+      gain.gain.linearRampToValueAtTime(volume, now + 0.025);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
       osc.connect(filter);
