@@ -29,6 +29,7 @@ export interface DirectoryData {
   audio: boolean;
   showCategoryNumbers?: boolean;
   showEntryNumbers?: boolean;
+  customTags?: string[];
   categories: Category[];
   updatedAt: string;
 }
@@ -41,6 +42,7 @@ export class AppState {
   public currentTheme: ThemeType = 'green';
   public crtEnabled: boolean = true;
   public selectedEntryIndex: number = -1;
+  public activeGame: boolean = false;
   public flattenedEntries: { entry: DirectoryEntry; category: Category; globalIndex: number }[] = [];
   public listeners: Set<() => void> = new Set();
 

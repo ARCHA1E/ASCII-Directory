@@ -1,5 +1,5 @@
 import { state, ThemeType } from './state.js';
-import { sound } from './audio.js';
+import { sound, MusicTrack } from './audio.js';
 
 export interface CommandResult {
   text?: string;
@@ -58,7 +58,7 @@ commands['starwars'] = commands['telnet'] = () => {
 commands['matrix'] = commands['cmatrix'] = () => {
   return {
     text: "[MATRIX STREAM INITIALIZED - PRESS ANY KEY TO STOP]",
-    asyncRunner: async (append, signal, updateFrame) => {
+    asyncRunner: async (append, signal) => {
       const chars = "0123456789ABCDEFｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ";
       for (let i = 0; i < 40; i++) {
         if (signal.stopped) break;
@@ -153,6 +153,7 @@ commands['pipes'] = () => {
 // ── 7. Neofetch ──────────────────────────────────────────────────────────────
 commands['neofetch'] = commands['fastfetch'] = () => {
   const isCrt = state.crtEnabled ? 'Enabled' : 'Disabled';
+  const music = sound.getCurrentTrack().toUpperCase();
   return {
     text: `
     /\\         guest@ascii-gateway
@@ -166,6 +167,7 @@ commands['neofetch'] = commands['fastfetch'] = () => {
                Terminal: CRT VT-220 Monospace
                Theme: ${state.currentTheme.toUpperCase()} (Phosphor)
                CRT Scanlines: ${isCrt}
+               Synthesizer: ${music}
                Memory: 16.2GiB / 64.0GiB
     `.trim()
   };
@@ -228,6 +230,7 @@ commands['snake'] = () => {
   return {
     text: "[RETRO SNAKE INITIALIZED - USE ARROW KEYS / WASD TO MOVE, Q TO QUIT]",
     asyncRunner: async (append, signal, updateFrame) => {
+      state.activeGame = true;
       const width = 24;
       const height = 10;
       let snake: [number, number][] = [[10, 5], [9, 5], [8, 5]];
@@ -253,21 +256,27 @@ commands['snake'] = () => {
         if (k === 'arrowup' || k === 'w') {
           if (dir[1] !== 1) nextDir = [0, -1];
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'arrowdown' || k === 's') {
           if (dir[1] !== -1) nextDir = [0, 1];
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'arrowleft' || k === 'a') {
           if (dir[0] !== 1) nextDir = [-1, 0];
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'arrowright' || k === 'd') {
           if (dir[0] !== -1) nextDir = [1, 0];
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'q' || k === 'escape') {
           signal.stopped = true;
+          e.preventDefault();
+          e.stopPropagation();
         }
       };
 
-      window.addEventListener('keydown', keyHandler);
+      window.addEventListener('keydown', keyHandler, true);
 
       try {
         while (!signal.stopped && !gameOver) {
@@ -322,7 +331,8 @@ commands['snake'] = () => {
             updateFrame(board, 'log-ok');
           }
 
-          await new Promise(r => setTimeout(r, 130));
+          // Relaxed tick speed for comfortable gameplay (~175ms)
+          await new Promise(r => setTimeout(r, 175));
         }
 
         if (gameOver) {
@@ -335,47 +345,52 @@ commands['snake'] = () => {
           }
         }
       } finally {
-        window.removeEventListener('keydown', keyHandler);
+        state.activeGame = false;
+        window.removeEventListener('keydown', keyHandler, true);
       }
     }
   };
 };
 
-// ── 12. PLAYABLE INTERACTIVE PONG GAME ────────────────────────────────────────
+// ── 12. PLAYABLE INTERACTIVE PONG GAME (FULL 5-POINT MATCH) ───────────────────
 commands['pong'] = () => {
   return {
-    text: "[RETRO PONG INITIALIZED - USE W/S OR UP/DOWN KEYS TO DEFEND]",
+    text: "[RETRO PONG: FIRST TO 5 POINTS - USE W/S OR UP/DOWN KEYS, Q TO QUIT]",
     asyncRunner: async (append, signal, updateFrame) => {
+      state.activeGame = true;
       const width = 32;
       const height = 10;
       let pY = 4;
       let cpuY = 4;
       let bX = 16;
       let bY = 5;
-      let vX = 1;
-      let vY = 0.5;
+      let vX = 0.9;
+      let vY = 0.45;
       let pScore = 0;
       let cpuScore = 0;
+      const maxScore = 5;
 
       const keyHandler = (e: KeyboardEvent) => {
         const k = e.key.toLowerCase();
         if (k === 'arrowup' || k === 'w') {
           if (pY > 1) pY--;
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'arrowdown' || k === 's') {
           if (pY < height - 3) pY++;
           e.preventDefault();
+          e.stopPropagation();
         } else if (k === 'q' || k === 'escape') {
           signal.stopped = true;
+          e.preventDefault();
+          e.stopPropagation();
         }
       };
 
-      window.addEventListener('keydown', keyHandler);
+      window.addEventListener('keydown', keyHandler, true);
 
       try {
-        for (let t = 0; t < 150; t++) {
-          if (signal.stopped) break;
-
+        while (!signal.stopped && pScore < maxScore && cpuScore < maxScore) {
           // Move ball
           bX += vX;
           bY += vY;
@@ -390,7 +405,7 @@ commands['pong'] = () => {
           if (bX <= 2 && bX >= 1) {
             if (bY >= pY - 1 && bY <= pY + 2) {
               vX = Math.abs(vX);
-              sound.playBeep(700, 0.05, 'triangle');
+              sound.playBeep(720, 0.04, 'triangle');
             }
           }
 
@@ -398,7 +413,7 @@ commands['pong'] = () => {
           if (bX >= width - 3) {
             if (bY >= cpuY - 1 && bY <= cpuY + 2) {
               vX = -Math.abs(vX);
-              sound.playBeep(600, 0.05, 'triangle');
+              sound.playBeep(620, 0.04, 'triangle');
             }
           }
 
@@ -406,21 +421,23 @@ commands['pong'] = () => {
           if (bX < 0) {
             cpuScore++;
             sound.playErrorBuzz();
-            bX = 16; bY = 5; vX = 1;
+            bX = 16; bY = 5; vX = 0.9; vY = (Math.random() > 0.5 ? 1 : -1) * 0.45;
+            await new Promise(r => setTimeout(r, 600));
           } else if (bX > width) {
             pScore++;
             sound.playSuccessChime();
-            bX = 16; bY = 5; vX = -1;
+            bX = 16; bY = 5; vX = -0.9; vY = (Math.random() > 0.5 ? 1 : -1) * 0.45;
+            await new Promise(r => setTimeout(r, 600));
           }
 
-          // CPU AI
-          if (Math.random() > 0.3) {
+          // CPU AI paddle tracking
+          if (Math.random() > 0.28) {
             if (cpuY + 1 < bY && cpuY < height - 3) cpuY++;
             if (cpuY + 1 > bY && cpuY > 1) cpuY--;
           }
 
           // Render board
-          let board = `+--[ PONG | YOU: ${pScore}  CPU: ${cpuScore} ]-----------------+\n`;
+          let board = `+--[ PONG (MATCH TO 5) | YOU: ${pScore}  CPU: ${cpuScore} ]---------+\n`;
           for (let y = 0; y < height; y++) {
             let row = '|';
             for (let x = 0; x < width; x++) {
@@ -445,10 +462,21 @@ commands['pong'] = () => {
             updateFrame(board, 'log-ok');
           }
 
-          await new Promise(r => setTimeout(r, 90));
+          await new Promise(r => setTimeout(r, 85));
+        }
+
+        if (pScore >= maxScore) {
+          sound.playSuccessChime();
+          const winScreen = `\n=========================================\n       VICTORY! YOU DEFEATED THE CPU!\n               SCORE: ${pScore} - ${cpuScore}\n=========================================\nType 'pong' to play again!`;
+          if (updateFrame) updateFrame(winScreen, 'log-ok');
+        } else if (cpuScore >= maxScore) {
+          sound.playErrorBuzz();
+          const loseScreen = `\n=========================================\n       MATCH OVER: CPU WON THE MATCH!\n               SCORE: ${pScore} - ${cpuScore}\n=========================================\nType 'pong' to play again!`;
+          if (updateFrame) updateFrame(loseScreen, 'log-err');
         }
       } finally {
-        window.removeEventListener('keydown', keyHandler);
+        state.activeGame = false;
+        window.removeEventListener('keydown', keyHandler, true);
       }
     }
   };
@@ -662,7 +690,38 @@ commands['zork'] = commands['adventure'] = (args) => {
   return { text: `I don't know how to "${act}". Try: 'look', 'n', 's', 'e', 'w', 'take <item>', 'inventory', or 'restart'.` };
 };
 
-// ── 15. Weather ──────────────────────────────────────────────────────────────
+// ── 15. Procedural Music Synthesizer & Easter Egg Melodies ────────────────────
+commands['music'] = (args) => {
+  const target = (args[0] || '').toLowerCase() as MusicTrack | 'status';
+  if (['cyberspace', 'neon', 'ambient', 'generative'].includes(target)) {
+    sound.setTrack(target as MusicTrack);
+    sound.playSuccessChime();
+    return { text: `[SYNTHESIZER] Procedural track switched to: ${target.toUpperCase()}`, isSuccess: true };
+  }
+  if (target === 'off' || target === 'stop' || target === 'mute') {
+    sound.setTrack('off');
+    return { text: "[SYNTHESIZER] Procedural background music STOPPED.", isSuccess: true };
+  }
+  const current = sound.getCurrentTrack();
+  return { text: `Usage: music <cyberspace|neon|ambient|generative|off> (Current: ${current.toUpperCase()})` };
+};
+
+commands['zelda'] = () => {
+  sound.playZeldaTheme();
+  return { text: "[♪ CHIPTUNE] Playing Zelda Secret & Lullaby melody...", isSuccess: true };
+};
+
+commands['pokemon'] = () => {
+  sound.playPokemonTheme();
+  return { text: "[♪ CHIPTUNE] Playing Pokémon Pallet Town theme...", isSuccess: true };
+};
+
+commands['tetristheme'] = commands['tetris_theme'] = () => {
+  sound.playTetrisTheme();
+  return { text: "[♪ CHIPTUNE] Playing Tetris Korobeiniki 8-bit theme...", isSuccess: true };
+};
+
+// ── 16. Weather ──────────────────────────────────────────────────────────────
 commands['weather'] = commands['wttr'] = (args) => {
   const city = args.join(' ') || 'Local Gateway';
   return {
@@ -678,7 +737,7 @@ Weather report: ${city}
   };
 };
 
-// ── 16. Rickroll ─────────────────────────────────────────────────────────────
+// ── 17. Rickroll ─────────────────────────────────────────────────────────────
 commands['rickroll'] = () => {
   return {
     text: `
@@ -693,7 +752,7 @@ commands['rickroll'] = () => {
   };
 };
 
-// ── 17. Sudo ─────────────────────────────────────────────────────────────────
+// ── 18. Sudo ─────────────────────────────────────────────────────────────────
 commands['sudo'] = (args) => {
   const cmd = args.join(' ').toLowerCase();
   if (cmd.includes('make me a sandwich') || cmd.includes('sandwich')) {
@@ -705,7 +764,7 @@ commands['sudo'] = (args) => {
   return { text: `[sudo] password for guest: \nUser 'guest' is not in the sudoers file. This incident will be reported.`, isError: true };
 };
 
-// ── 18. Hack / Nmap ──────────────────────────────────────────────────────────
+// ── 19. Hack / Nmap ──────────────────────────────────────────────────────────
 commands['hack'] = commands['nmap'] = (args) => {
   const target = args[0] || '127.0.0.1';
   return {
@@ -720,7 +779,7 @@ Nmap done: 1 IP address scanned in 0.04 seconds.`
   };
 };
 
-// ── 19. BSOD ─────────────────────────────────────────────────────────────────
+// ── 20. BSOD ─────────────────────────────────────────────────────────────────
 commands['bsod'] = () => {
   return {
     text: `
@@ -735,7 +794,7 @@ Contact your system administrator or restart terminal with 'clear'.
   };
 };
 
-// ── 20. Top / Htop ───────────────────────────────────────────────────────────
+// ── 21. Top / Htop ───────────────────────────────────────────────────────────
 commands['top'] = commands['htop'] = () => {
   return {
     text: `
@@ -753,14 +812,14 @@ MiB Mem :  64380.2 total,  48120.4 free,  16259.8 used,   3240.1 buff/cache
   };
 };
 
-// ── 21. Whoami ───────────────────────────────────────────────────────────────
+// ── 22. Whoami ───────────────────────────────────────────────────────────────
 commands['whoami'] = () => {
   return {
     text: state.authenticated ? "root (authorized system administrator)" : "guest (unprivileged visitor)"
   };
 };
 
-// ── 22. Uname ────────────────────────────────────────────────────────────────
+// ── 23. Uname ────────────────────────────────────────────────────────────────
 commands['uname'] = (args) => {
   if (args.includes('-a')) {
     return { text: "Linux arch-gateway 6.8.4-arch1-1 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux" };
@@ -768,12 +827,12 @@ commands['uname'] = (args) => {
   return { text: "Linux" };
 };
 
-// ── 23. Uptime ───────────────────────────────────────────────────────────────
+// ── 24. Uptime ───────────────────────────────────────────────────────────────
 commands['uptime'] = () => {
   return { text: `${new Date().toLocaleTimeString()} up 42 days, 13:37, 1 user, load average: 0.08, 0.04, 0.01` };
 };
 
-// ── 24. Date & Cal ───────────────────────────────────────────────────────────
+// ── 25. Date & Cal ───────────────────────────────────────────────────────────
 commands['date'] = () => ({ text: new Date().toString() });
 commands['cal'] = () => {
   const d = new Date();
@@ -791,7 +850,7 @@ Su Mo Tu We Th Fr Sa
   };
 };
 
-// ── 25. Help / Man ───────────────────────────────────────────────────────────
+// ── 26. Help / Man ───────────────────────────────────────────────────────────
 commands['help'] = commands['man'] = () => {
   const adminSection = state.authenticated ? `
 ADMINISTRATION:
@@ -805,6 +864,7 @@ ADMINISTRATION:
 SYSTEM & DIRECTORY:
   theme <green|amber|cyan|white|matrix>  Change CRT phosphor palette
   audio <on|off>                         Toggle keyclicks and PC beeps
+  music <cyberspace|neon|ambient|gen|off> Procedural chiptune music
   scanlines <on|off>                     Toggle CRT scanlines
   grep <search_term>                     Search directory links
   clear / cls                            Clear terminal log
@@ -814,6 +874,7 @@ SYSTEM & DIRECTORY:
 
 UTILITIES & RECREATION:
   snake, pong, tetris, zork              Playable ASCII games
+  zelda, pokemon, tetristheme            Iconic chiptune melody easter eggs
   cowsay, cowthink, neofetch, fortune    Fun UNIX tools
   starwars, matrix, sl, pipes, hollywood Demoscene animations
   roll, flip, 8ball, quote, joke, weather Classic mini-utilities
@@ -822,7 +883,7 @@ ${adminSection}=================================================================
   };
 };
 
-// ── 26. Ls / Dir ─────────────────────────────────────────────────────────────
+// ── 27. Ls / Dir ─────────────────────────────────────────────────────────────
 commands['ls'] = commands['dir'] = () => {
   return {
     text: `
@@ -835,7 +896,7 @@ drwxr-xr-x 2 root root  4096 Aug 26 00:00 data/
   };
 };
 
-// ── 27. Cat ──────────────────────────────────────────────────────────────────
+// ── 28. Cat ──────────────────────────────────────────────────────────────────
 commands['cat'] = (args) => {
   const file = (args[0] || '').toLowerCase();
   if (file.includes('motd')) {
@@ -847,7 +908,7 @@ commands['cat'] = (args) => {
   return { text: `cat: ${file || 'file'}: No such file or directory`, isError: true };
 };
 
-// ── 28. Ping ─────────────────────────────────────────────────────────────────
+// ── 29. Ping ─────────────────────────────────────────────────────────────────
 commands['ping'] = (args) => {
   const host = args[0] || '1.1.1.1';
   return {
@@ -860,7 +921,7 @@ commands['ping'] = (args) => {
   };
 };
 
-// ── 29. Traceroute ───────────────────────────────────────────────────────────
+// ── 30. Traceroute ───────────────────────────────────────────────────────────
 commands['traceroute'] = (args) => {
   const host = args[0] || 'cloudflare.com';
   return {
@@ -871,7 +932,7 @@ commands['traceroute'] = (args) => {
   };
 };
 
-// ── 30. Theme ────────────────────────────────────────────────────────────────
+// ── 31. Theme ────────────────────────────────────────────────────────────────
 commands['theme'] = (args) => {
   const target = (args[0] || '').toLowerCase() as ThemeType;
   if (['green', 'amber', 'cyan', 'white', 'matrix'].includes(target)) {
@@ -882,7 +943,7 @@ commands['theme'] = (args) => {
   return { text: `Usage: theme <green|amber|cyan|white|matrix> (Current: ${state.currentTheme})` };
 };
 
-// ── 31. Audio / Sound ────────────────────────────────────────────────────────
+// ── 32. Audio / Sound ────────────────────────────────────────────────────────
 commands['audio'] = commands['sound'] = (args) => {
   const target = (args[0] || '').toLowerCase();
   if (target === 'on') {
@@ -897,7 +958,7 @@ commands['audio'] = commands['sound'] = (args) => {
   return { text: `[AUDIO] Sound is now ${status ? 'ON' : 'MUTED'}.` };
 };
 
-// ── 32. Scanlines / CRT ──────────────────────────────────────────────────────
+// ── 33. Scanlines / CRT ──────────────────────────────────────────────────────
 commands['scanlines'] = commands['crt'] = (args) => {
   const target = (args[0] || '').toLowerCase();
   if (target === 'on') {
@@ -912,19 +973,19 @@ commands['scanlines'] = commands['crt'] = (args) => {
   return { text: `[CRT] Shaders are now ${current ? 'ENABLED' : 'DISABLED'}.` };
 };
 
-// ── 33. Clear / Cls ──────────────────────────────────────────────────────────
+// ── 34. Clear / Cls ──────────────────────────────────────────────────────────
 commands['clear'] = commands['cls'] = () => ({ clear: true });
 
-// ── 34. History ──────────────────────────────────────────────────────────────
+// ── 35. History ──────────────────────────────────────────────────────────────
 commands['history'] = () => ({ text: "Command history buffer active. Use Up/Down arrows in command bar." });
 
-// ── 35. Echo ─────────────────────────────────────────────────────────────────
+// ── 36. Echo ─────────────────────────────────────────────────────────────────
 commands['echo'] = (args) => ({ text: args.join(' ') });
 
-// ── 36. Motd ─────────────────────────────────────────────────────────────────
+// ── 37. Motd ─────────────────────────────────────────────────────────────────
 commands['motd'] = () => ({ text: state.data?.motd || "SYSTEM READY." });
 
-// ── 37. Ps & Kill ────────────────────────────────────────────────────────────
+// ── 38. Ps & Kill ────────────────────────────────────────────────────────────
 commands['ps'] = () => ({
   text: `
   PID TTY          TIME CMD
@@ -937,7 +998,7 @@ commands['ps'] = () => ({
 });
 commands['kill'] = (args) => ({ text: `kill: (${args[0] || 'pid'}): Operation not permitted for guest user`, isError: true });
 
-// ── 38. Df -h ────────────────────────────────────────────────────────────────
+// ── 39. Df -h ────────────────────────────────────────────────────────────────
 commands['df'] = () => ({
   text: `
 Filesystem      Size  Used Avail Use% Mounted on
@@ -946,7 +1007,7 @@ tmpfs            32G  1.2M   32G   1% /dev/shm
   `
 });
 
-// ── 39. Free -m ──────────────────────────────────────────────────────────────
+// ── 40. Free -m ──────────────────────────────────────────────────────────────
 commands['free'] = () => ({
   text: `
                total        used        free      shared  buff/cache   available
@@ -955,7 +1016,7 @@ Swap:           8192           0        8192
   `
 });
 
-// ── 40. Ifconfig / Ip ────────────────────────────────────────────────────────
+// ── 41. Ifconfig / Ip ────────────────────────────────────────────────────────
 commands['ifconfig'] = commands['ip'] = () => ({
   text: `
 eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
@@ -965,7 +1026,7 @@ cf0:  flags=4099<UP,BROADCAST,MULTICAST>  mtu 1280
   `
 });
 
-// ── 41. Netstat ──────────────────────────────────────────────────────────────
+// ── 42. Netstat ──────────────────────────────────────────────────────────────
 commands['netstat'] = () => ({
   text: `
 Active Internet connections (servers and established)
@@ -975,7 +1036,7 @@ tcp        0      0 192.168.1.100:3000      192.168.1.50:54321      ESTABLISHED
   `
 });
 
-// ── 42. Grep ─────────────────────────────────────────────────────────────────
+// ── 43. Grep ─────────────────────────────────────────────────────────────────
 commands['grep'] = (args) => {
   const query = args.join(' ').toLowerCase();
   if (!query) return { text: "Usage: grep <keyword>" };
@@ -993,20 +1054,20 @@ commands['grep'] = (args) => {
   return { text: `Grep results for "${query}":\n${matches.join('\n')}`, isSuccess: true };
 };
 
-// ── 43. Roll / Dice ──────────────────────────────────────────────────────────
+// ── 44. Roll / Dice ──────────────────────────────────────────────────────────
 commands['roll'] = commands['dice'] = (args) => {
   const sides = parseInt(args[0] || '6', 10) || 6;
   const result = Math.floor(Math.random() * sides) + 1;
   return { text: `Rolling d${sides}... Result: [ ${result} ]`, isSuccess: true };
 };
 
-// ── 44. Flip Coin ────────────────────────────────────────────────────────────
+// ── 45. Flip Coin ────────────────────────────────────────────────────────────
 commands['flip'] = commands['coin'] = () => {
   const res = Math.random() > 0.5 ? "HEADS" : "TAILS";
   return { text: `Flipping coin... Result: [ ${res} ]` };
 };
 
-// ── 45. 8ball ────────────────────────────────────────────────────────────────
+// ── 46. 8ball ────────────────────────────────────────────────────────────────
 commands['8ball'] = () => {
   const answers = [
     "It is certain.", "Without a doubt.", "You may rely on it.",
@@ -1016,12 +1077,12 @@ commands['8ball'] = () => {
   return { text: `Magic 8-Ball says: “${answers[Math.floor(Math.random() * answers.length)]}”` };
 };
 
-// ── 46. Quote ────────────────────────────────────────────────────────────────
+// ── 47. Quote ────────────────────────────────────────────────────────────────
 commands['quote'] = () => {
   return { text: "“The only true wisdom is in knowing you know nothing.” — Socrates" };
 };
 
-// ── 47. Joke ─────────────────────────────────────────────────────────────────
+// ── 48. Joke ─────────────────────────────────────────────────────────────────
 commands['joke'] = () => {
   const jokes = [
     "Why do programmers prefer dark mode? Because light attracts bugs.",
@@ -1031,7 +1092,7 @@ commands['joke'] = () => {
   return { text: jokes[Math.floor(Math.random() * jokes.length)] };
 };
 
-// ── 48. DVD Screensaver ──────────────────────────────────────────────────────
+// ── 49. DVD Screensaver ──────────────────────────────────────────────────────
 commands['dvd'] = () => {
   return {
     text: `
@@ -1046,7 +1107,7 @@ commands['dvd'] = () => {
   };
 };
 
-// ── 49. Fire ─────────────────────────────────────────────────────────────────
+// ── 50. Fire ─────────────────────────────────────────────────────────────────
 commands['fire'] = () => {
   return {
     text: `
@@ -1061,7 +1122,7 @@ commands['fire'] = () => {
   };
 };
 
-// ── 50. Tux ──────────────────────────────────────────────────────────────────
+// ── 51. Tux ──────────────────────────────────────────────────────────────────
 commands['tux'] = () => {
   return {
     text: `
@@ -1077,7 +1138,7 @@ Linux Forever!
   };
 };
 
-// ── 51. Clock ────────────────────────────────────────────────────────────────
+// ── 52. Clock ────────────────────────────────────────────────────────────────
 commands['clock'] = () => {
   return { text: `CURRENT SYSTEM TIME: [ ${new Date().toLocaleTimeString()} ]` };
 };

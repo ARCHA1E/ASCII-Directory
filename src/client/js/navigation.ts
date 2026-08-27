@@ -4,8 +4,6 @@ import { DirectoryRenderer } from './renderer.js';
 
 export class NavigationManager {
   private renderer: DirectoryRenderer;
-  private numberBuffer: string = '';
-  private numberTimer: any = null;
 
   constructor(renderer: DirectoryRenderer) {
     this.renderer = renderer;
@@ -16,52 +14,97 @@ export class NavigationManager {
     const inputEl = document.getElementById('terminal-input') as HTMLInputElement;
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
-      sound.playKeyClick();
-
-      // If active element is inside an open modal or input dialog, let it handle its own keys
+      // 1. If inside an open modal or input dialog, ignore global navigation
       const modal = document.getElementById('tui-modal');
       if (modal && !modal.classList.contains('hidden')) {
+        return;
+      }
+      if (document.querySelector('.tui-dialog-overlay')) {
+        return;
+      }
+
+      // 2. If a mini-game is actively running, lock focus to the game
+      if (state.activeGame) {
         return;
       }
 
       const isInputFocused = document.activeElement === inputEl;
 
-      if (e.key === '/' && !isInputFocused) {
-        e.preventDefault();
-        document.body.classList.add('terminal-typing-mode');
-        inputEl.focus();
+      // Escape key clears selection or blurs input
+      if (e.key === 'Escape') {
+        if (isInputFocused || document.body.classList.contains('terminal-typing-mode')) {
+          inputEl?.blur();
+          document.body.classList.remove('terminal-typing-mode');
+        }
+        this.renderer.updateSelection(-1);
         return;
       }
 
-      if (e.key === 'Escape') {
-        if (isInputFocused || document.body.classList.contains('terminal-typing-mode')) {
-          inputEl.blur();
-          document.body.classList.remove('terminal-typing-mode');
+      const totalEntries = state.flattenedEntries.length;
+
+      // 3. Arrow Keys Navigation
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (isInputFocused) {
+          // If at end of input or empty, shift to list navigation
+          if (inputEl.value === '') {
+            inputEl.blur();
+            document.body.classList.remove('terminal-typing-mode');
+          } else {
+            return; // Let terminal history handle it
+          }
+        }
+        let next = state.selectedEntryIndex + 1;
+        if (next > totalEntries || next < 1) next = 1;
+        this.renderer.updateSelection(next);
+        sound.playKeyClick();
+        return;
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (isInputFocused) {
+          if (inputEl.value === '') {
+            inputEl.blur();
+            document.body.classList.remove('terminal-typing-mode');
+          } else {
+            return; // Let terminal history handle it
+          }
+        }
+        let prev = state.selectedEntryIndex - 1;
+        if (prev < 1) prev = totalEntries;
+        this.renderer.updateSelection(prev);
+        sound.playKeyClick();
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        if (!isInputFocused && state.selectedEntryIndex > 0) {
+          e.preventDefault();
+          const item = state.flattenedEntries.find(i => i.globalIndex === state.selectedEntryIndex);
+          if (item) {
+            sound.playBeep(920, 0.08, 'sine');
+            window.open(item.entry.url, item.entry.target || '_blank');
+          }
           return;
         }
       }
 
-      if (isInputFocused) {
-        return; // Terminal input handles its own commands
+      if (e.key === 'ArrowLeft') {
+        if (!isInputFocused) {
+          e.preventDefault();
+          this.renderer.updateSelection(-1);
+          if (inputEl) {
+            document.body.classList.add('terminal-typing-mode');
+            inputEl.focus();
+          }
+          sound.playKeyClick();
+          return;
+        }
       }
 
-      // Keyboard navigation for main directory list
-      const totalEntries = state.flattenedEntries.length;
-      if (totalEntries === 0) return;
-
-      if (e.key === 'ArrowDown' || e.key === 'j') {
-        e.preventDefault();
-        document.body.classList.remove('terminal-typing-mode');
-        let next = state.selectedEntryIndex + 1;
-        if (next > totalEntries) next = 1;
-        this.renderer.updateSelection(next);
-      } else if (e.key === 'ArrowUp' || e.key === 'k') {
-        e.preventDefault();
-        document.body.classList.remove('terminal-typing-mode');
-        let prev = state.selectedEntryIndex - 1;
-        if (prev < 1) prev = totalEntries;
-        this.renderer.updateSelection(prev);
-      } else if (e.key === 'Enter') {
+      // Enter on selected entry when input is not focused
+      if (e.key === 'Enter' && !isInputFocused) {
         e.preventDefault();
         if (state.selectedEntryIndex > 0) {
           const item = state.flattenedEntries.find(i => i.globalIndex === state.selectedEntryIndex);
@@ -70,17 +113,19 @@ export class NavigationManager {
             window.open(item.entry.url, item.entry.target || '_blank');
           }
         }
-      } else if (/^[0-9]$/.test(e.key)) {
-        // Quick numeric jump
-        this.numberBuffer += e.key;
-        clearTimeout(this.numberTimer);
-        this.numberTimer = setTimeout(() => {
-          const targetIdx = parseInt(this.numberBuffer, 10);
-          this.numberBuffer = '';
-          if (targetIdx >= 1 && targetIdx <= totalEntries) {
-            this.renderer.updateSelection(targetIdx);
+        return;
+      }
+
+      // 4. Any other alphanumeric / symbol keypress routes directly to terminal input
+      if (!isInputFocused && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (e.key.length === 1 || e.key === 'Backspace') {
+          if (inputEl) {
+            this.renderer.updateSelection(-1);
+            document.body.classList.add('terminal-typing-mode');
+            inputEl.focus();
+            // Let the event flow into the focused inputEl
           }
-        }, 350);
+        }
       }
     });
 

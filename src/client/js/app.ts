@@ -31,6 +31,17 @@ class RetroApp {
       this.updateHeaderLabels();
       this.terminal.updatePrompt();
     });
+
+    // Auto-resume procedural music if enabled
+    if (sound.isEnabled() && sound.getCurrentTrack() !== 'off') {
+      const startMusicOnFirstInteraction = () => {
+        sound.startMusic();
+        window.removeEventListener('click', startMusicOnFirstInteraction);
+        window.removeEventListener('keydown', startMusicOnFirstInteraction);
+      };
+      window.addEventListener('click', startMusicOnFirstInteraction, { once: true });
+      window.addEventListener('keydown', startMusicOnFirstInteraction, { once: true });
+    }
   }
 
   private initThemeAndCrt(): void {
@@ -58,6 +69,11 @@ class RetroApp {
     if (audioLabel) {
       audioLabel.textContent = sound.isEnabled() ? 'ON' : 'MUTED';
     }
+
+    const musicLabel = document.getElementById('music-status-label');
+    if (musicLabel) {
+      musicLabel.textContent = sound.getCurrentTrack().toUpperCase();
+    }
   }
 
   private setupHeaderControls(): void {
@@ -81,6 +97,14 @@ class RetroApp {
     if (audioBtn) {
       audioBtn.addEventListener('click', () => {
         sound.toggle();
+        this.updateHeaderLabels();
+      });
+    }
+
+    const musicBtn = document.getElementById('btn-music-toggle');
+    if (musicBtn) {
+      musicBtn.addEventListener('click', () => {
+        sound.cycleTrack();
         this.updateHeaderLabels();
       });
     }
@@ -118,12 +142,12 @@ class RetroApp {
         state.setAuthenticated(data.authenticated);
       }
     } catch (err) {
-      console.error('Auth check error', err);
+      console.error('Failed to verify session token', err);
     }
   }
 }
 
-// Boot application
+// Bootstrap application on DOMContentLoaded
 window.addEventListener('DOMContentLoaded', () => {
   new RetroApp();
 });

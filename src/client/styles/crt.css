@@ -17,8 +17,8 @@ body.crt-enabled #crt-overlay {
     var(--crt-scanline-color) 50%
   );
   background-size: 100% 4px;
-  animation: scanlineScroll 0.25s linear infinite;
-  opacity: 0.85;
+  animation: scanlineScroll 0.35s linear infinite;
+  opacity: 0.72;
 }
 
 body.crt-enabled #crt-vignette {
@@ -31,15 +31,15 @@ body.crt-enabled #crt-vignette {
   z-index: 9998;
   background: radial-gradient(
     circle at center,
-    transparent 60%,
-    rgba(0, 0, 0, 0.4) 85%,
-    rgba(0, 0, 0, 0.75) 100%
+    transparent 65%,
+    rgba(0, 0, 0, 0.35) 88%,
+    rgba(0, 0, 0, 0.7) 100%
   );
-  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.75);
 }
 
 body.crt-enabled #terminal-container {
-  animation: subtleFlicker 0.15s infinite alternate;
+  animation: subtleFlicker 0.22s infinite alternate;
 }
 
 @keyframes scanlineScroll {
@@ -48,9 +48,9 @@ body.crt-enabled #terminal-container {
 }
 
 @keyframes subtleFlicker {
-  0% { opacity: 0.99; }
+  0% { opacity: 0.993; }
   50% { opacity: 1; }
-  100% { opacity: 0.985; }
+  100% { opacity: 0.988; }
 }
 
 /* CRT Degauss / Reboot Flash */

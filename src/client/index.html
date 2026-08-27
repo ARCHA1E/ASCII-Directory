@@ -29,6 +29,7 @@
           <button id="btn-theme-cycle" class="btn-retro" title="Cycle CRT Theme">[THEME: <span id="current-theme-label">P1 GREEN</span>]</button>
           <button id="btn-crt-toggle" class="btn-retro" title="Toggle CRT Scanlines">[CRT: <span id="crt-status-label">ON</span>]</button>
           <button id="btn-audio-toggle" class="btn-retro" title="Toggle Key Sounds & Speaker Beeps">[AUDIO: <span id="audio-status-label">ON</span>]</button>
+          <button id="btn-music-toggle" class="btn-retro" title="Procedural Chiptune Music Synthesizer">[♪ MUSIC: <span id="music-status-label">OFF</span>]</button>
         </div>
       </div>
       <div id="system-motd" class="motd-bar"></div>
@@ -51,37 +52,43 @@
           <span class="custom-cursor">█</span>
         </div>
         <div class="shortcut-hints">
-          <span class="hint">[Tab/Arrows]: Nav</span>
-          <span class="hint">[Enter]: Open</span>
+          <span class="hint">[↑/↓]: Scroll</span>
+          <span class="hint">[→]: Open</span>
+          <span class="hint">[←]: CLI</span>
           <span class="hint">[/]: Focus CLI</span>
-          <span class="hint">[Esc]: Show Directory</span>
         </div>
       </div>
 
       <div id="terminal-output-container" class="collapsed">
         <div class="output-header">
-          <span>───[ TERMINAL OUTPUT BUFFER ]───</span>
-          <button id="btn-clear-term" class="btn-retro-sm">[CLEAR]</button>
-          <button id="btn-close-term" class="btn-retro-sm">[MINIMIZE]</button>
+          <span>TERMINAL BUFFER LOG</span>
+          <div>
+            <button id="btn-clear-term" class="btn-retro-sm">[CLEAR]</button>
+            <button id="btn-close-term" class="btn-retro-sm">[X]</button>
+          </div>
         </div>
         <div id="terminal-output" class="terminal-log"></div>
       </div>
     </section>
 
-    <!-- Main ASCII Directory Listing -->
-    <main id="directory-content">
-      <div id="directory-list" role="tree" tabindex="0">
-        <!-- Rendered dynamically by renderer.ts -->
-      </div>
+    <!-- Directory Content List -->
+    <main id="directory-content" tabindex="-1">
+      <div id="directory-list"></div>
     </main>
 
-    <!-- Interactive Retro TUI Editor Modal -->
-    <div id="tui-modal" class="hidden">
-      <div class="tui-backdrop"></div>
-      <div class="tui-window" id="tui-window-box">
-        <!-- Rendered by tuiEditor.ts -->
+    <!-- Footer -->
+    <footer id="system-footer">
+      <div class="footer-bar">
+        <span>ASCII DIRECTORY GATEWAY v1.0 • 1980s MONOSPACE INTERFACE</span>
+        <span>PROXMOX HOMELAB NODE</span>
       </div>
-    </div>
+    </footer>
+  </div>
+
+  <!-- TUI Overlay Modal Structure -->
+  <div id="tui-modal" class="hidden">
+    <div class="tui-backdrop"></div>
+    <div class="tui-window" id="tui-window-box"></div>
   </div>
 
   <script type="module" src="/js/app.ts"></script>

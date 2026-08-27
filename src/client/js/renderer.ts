@@ -31,8 +31,13 @@ export class DirectoryRenderer {
       "                                                                                                                                                                  `--`  "
     ].join('\n');
 
-    const sep = '='.repeat(148);
-    return `${rawAscii}\n${sep}\n ${title}  •  [${subtitle}]\n${sep}`;
+    const totalWidth = 148;
+    const sep = '='.repeat(totalWidth);
+    const rawFluff = `${title}  •  [${subtitle}]`;
+    const padLen = Math.max(0, Math.floor((totalWidth - rawFluff.length) / 2));
+    const centeredFluff = ' '.repeat(padLen) + rawFluff;
+
+    return `${rawAscii}\n${sep}\n${centeredFluff}\n${sep}`;
   }
 
   public render(): void {
