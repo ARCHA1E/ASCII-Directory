@@ -56,6 +56,9 @@ export class DirectoryRenderer {
     if (!this.listEl) return;
     this.listEl.innerHTML = '';
 
+    const showCatNumbers = state.data.showCategoryNumbers !== false;
+    const showEntryNumbers = state.data.showEntryNumbers !== false;
+
     const categories = state.data.categories.sort((a, b) => a.order - b.order);
 
     let globalCounter = 1;
@@ -70,8 +73,10 @@ export class DirectoryRenderer {
       const header = document.createElement('div');
       header.className = 'category-header';
       const catNum = String(catIdx + 1).padStart(2, '0');
+      const catTitle = showCatNumbers ? `${catNum}: ${cat.name}` : cat.name;
+
       header.innerHTML = `
-        <span>+--[ ${catNum}: ${cat.name} ]</span>
+        <span>+--[ ${catTitle} ]</span>
         <span>${cat.icon || '[DIR]'} (${cat.entries.length} items)</span>
       `;
       frame.appendChild(header);
@@ -90,7 +95,7 @@ export class DirectoryRenderer {
           .forEach((entry) => {
             const entryIndex = globalCounter++;
             const entryEl = document.createElement('a');
-            entryEl.className = 'directory-entry';
+            entryEl.className = `directory-entry ${showEntryNumbers ? '' : 'no-idx'}`;
             entryEl.href = entry.url;
             entryEl.target = entry.target || '_blank';
             entryEl.rel = 'noopener noreferrer';
@@ -102,12 +107,13 @@ export class DirectoryRenderer {
             }
 
             const formattedIdx = String(entryIndex).padStart(2, '0');
+            const idxHtml = showEntryNumbers ? `<span class="entry-idx">[${formattedIdx}]</span>` : '';
             const tagsHtml = (entry.tags || [])
               .map(t => `<span class="tag-badge">#${t}</span>`)
               .join('');
 
             entryEl.innerHTML = `
-              <span class="entry-idx">[${formattedIdx}]</span>
+              ${idxHtml}
               <span class="entry-title">${escapeHtml(entry.title)}</span>
               <span class="entry-url">${escapeHtml(entry.url)}</span>
               <span class="entry-desc">${escapeHtml(entry.description || '')}</span>
@@ -140,7 +146,7 @@ export class DirectoryRenderer {
 }
 
 function escapeHtml(str: string): string {
-  return str
+  return (str || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

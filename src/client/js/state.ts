@@ -27,6 +27,8 @@ export interface DirectoryData {
   defaultTheme: 'green' | 'amber' | 'cyan' | 'white' | 'matrix';
   scanlines: boolean;
   audio: boolean;
+  showCategoryNumbers?: boolean;
+  showEntryNumbers?: boolean;
   categories: Category[];
   updatedAt: string;
 }
@@ -59,12 +61,12 @@ export class AppState {
   }
 
   public notify(): void {
-    this.rebuildFlattenedEntries();
     this.listeners.forEach(fn => fn());
   }
 
   public setData(data: DirectoryData): void {
     this.data = data;
+    this.rebuildIndex();
     this.notify();
   }
 
@@ -76,51 +78,37 @@ export class AppState {
   public setTheme(theme: ThemeType): void {
     this.currentTheme = theme;
     localStorage.setItem('ascii_theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
+    document.body.dataset.theme = theme;
     this.notify();
-  }
-
-  public cycleTheme(): ThemeType {
-    const themes: ThemeType[] = ['green', 'amber', 'cyan', 'white', 'matrix'];
-    const idx = themes.indexOf(this.currentTheme);
-    const nextTheme = themes[(idx + 1) % themes.length];
-    this.setTheme(nextTheme);
-    return nextTheme;
   }
 
   public setCrtEnabled(enabled: boolean): void {
     this.crtEnabled = enabled;
     localStorage.setItem('ascii_crt_enabled', String(enabled));
     if (enabled) {
-      document.body.classList.add('crt-enabled');
+      document.body.classList.add('crt-active');
     } else {
-      document.body.classList.remove('crt-enabled');
+      document.body.classList.remove('crt-active');
     }
     this.notify();
   }
 
-  public toggleCrt(): boolean {
-    this.setCrtEnabled(!this.crtEnabled);
-    return this.crtEnabled;
-  }
+  public rebuildIndex(): void {
+    if (!this.data) return;
+    this.flattenedEntries = [];
+    let counter = 1;
 
-  private rebuildFlattenedEntries(): void {
-    if (!this.data) {
-      this.flattenedEntries = [];
-      return;
+    const sortedCategories = [...this.data.categories].sort((a, b) => a.order - b.order);
+    for (const cat of sortedCategories) {
+      const sortedEntries = [...cat.entries].sort((a, b) => a.order - b.order);
+      for (const entry of sortedEntries) {
+        this.flattenedEntries.push({
+          entry,
+          category: cat,
+          globalIndex: counter++
+        });
+      }
     }
-    const list: { entry: DirectoryEntry; category: Category; globalIndex: number }[] = [];
-    let idx = 1;
-    this.data.categories
-      .sort((a, b) => a.order - b.order)
-      .forEach(cat => {
-        cat.entries
-          .sort((a, b) => a.order - b.order)
-          .forEach(entry => {
-            list.push({ entry, category: cat, globalIndex: idx++ });
-          });
-      });
-    this.flattenedEntries = list;
   }
 }
 

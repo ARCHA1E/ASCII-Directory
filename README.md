@@ -47,15 +47,18 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main
 - **Dual Keyboard & Mouse Navigation**:
   - Click any link directly to open in a new tab.
   - Keyboard navigation: Arrow keys (`↑`/`↓`), `j`/`k` to navigate, `Enter` to open URL, `Tab` to cycle categories, `/` to focus the terminal, and typing index numbers (e.g. `1`, `02`) to quick-jump.
-- **Unobtrusive Command Bar & Secret Admin Login**:
+- **Unobtrusive Command Bar & Masked Admin Login**:
   - Constantly visible terminal prompt positioned above the directory (`guest@gateway:~$ `).
   - Automatically hides the directory list when typing to give a clean terminal view (`Escape` returns to directory).
-  - Type `login <password>` to authenticate. Password verification is performed **100% on the server side** with secure HTTP-only session cookies and brute-force rate limiting.
+  - Obfuscated typing for `login <password>` with `*` asterisks in both prompt and scrollback logs.
+  - Password verification is performed **100% on the server side** with secure HTTP-only session cookies and brute-force rate limiting.
 - **Interactive Retro TUI Editor (Curses-style)**:
-  - Logging in as admin launches a full-screen retro curses modal editor.
+  - Logging in as admin launches a full-screen retro curses modal editor (`tui` / `edit`).
   - Manage categories and entries directly from the keyboard:
-    - `[A]` Add Entry &nbsp;•&nbsp; `[E]` Edit Entry &nbsp;•&nbsp; `[D]` Delete Entry
-    - `[+]` Add Category &nbsp;•&nbsp; `[-]` Delete Category &nbsp;•&nbsp; `[R]` Rename
+    - `[A]` Add Entry &nbsp;•&nbsp; `[E]` Edit Selected Item &nbsp;•&nbsp; `[D]` Delete Selected Item
+    - `[+]` Add Category &nbsp;•&nbsp; `[R]` Edit / Rename Category &nbsp;•&nbsp; `[-]` Delete Category
+    - `[U]` ▲ Move Up (Reorganize) &nbsp;•&nbsp; `[N]` ▼ Move Down (Reorganize)
+    - `[1]` Toggle Category Numbers &nbsp;•&nbsp; `[2]` Toggle Entry Numbers
     - `[Tab/Arrows]` Switch panels &nbsp;•&nbsp; `[Q]` Close Editor
 - **60 Terminal Utilities & Easter Eggs**:
   - Rich collection of terminal commands and simulations (`starwars`, `cmatrix`, `sl`, `pipes`, `cowsay`, `neofetch`, `snake`, `tetris`, `pong`, `zork`, `weather`, `rickroll`, `sudo`, `hack`, `top`, `fire`, `donut`, `tux`, etc.).

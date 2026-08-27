@@ -40,7 +40,7 @@ export class TuiEditor {
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       if (!this.isOpen()) return;
 
-      // If a dialog form input is open and focused, do not intercept keys
+      // If a dialog form input is open and focused, do not intercept navigation keys
       if (document.querySelector('.tui-dialog-overlay')) {
         if (e.key === 'Escape') {
           this.closeDialog();
@@ -60,12 +60,21 @@ export class TuiEditor {
       const currentCategory = categories[this.selectedCategoryIdx];
       const entries = currentCategory?.entries || [];
 
+      // Panel Switching
       if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
         this.activePanel = this.activePanel === 'categories' ? 'entries' : 'categories';
         this.render();
-      } else if (e.key === 'ArrowDown' || e.key === 'j') {
+        return;
+      }
+
+      // Up / Down Navigation
+      if (e.key === 'ArrowDown' || e.key === 'j') {
         e.preventDefault();
+        if (e.shiftKey) {
+          this.moveSelectedItem('down');
+          return;
+        }
         if (this.activePanel === 'categories') {
           if (this.selectedCategoryIdx < categories.length - 1) {
             this.selectedCategoryIdx++;
@@ -77,8 +86,15 @@ export class TuiEditor {
           }
         }
         this.render();
-      } else if (e.key === 'ArrowUp' || e.key === 'k') {
+        return;
+      }
+
+      if (e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault();
+        if (e.shiftKey) {
+          this.moveSelectedItem('up');
+          return;
+        }
         if (this.activePanel === 'categories') {
           if (this.selectedCategoryIdx > 0) {
             this.selectedCategoryIdx--;
@@ -90,24 +106,60 @@ export class TuiEditor {
           }
         }
         this.render();
-      } else if (e.key.toLowerCase() === 'a') {
+        return;
+      }
+
+      // Reorganize shortcuts (U = move up, N = move down)
+      if (e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        this.moveSelectedItem('up');
+        return;
+      }
+      if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        this.moveSelectedItem('down');
+        return;
+      }
+
+      // Numbering Toggles (1 = Cat Num, 2 = Ent Num)
+      if (e.key === '1') {
+        e.preventDefault();
+        this.toggleCategoryNumbers();
+        return;
+      }
+      if (e.key === '2') {
+        e.preventDefault();
+        this.toggleEntryNumbers();
+        return;
+      }
+
+      // Actions: Add / Edit / Delete
+      if (e.key.toLowerCase() === 'a') {
         e.preventDefault();
         this.promptAddEntry();
       } else if (e.key.toLowerCase() === 'e') {
         e.preventDefault();
-        this.promptEditEntry();
+        if (this.activePanel === 'categories') {
+          this.promptEditCategory();
+        } else {
+          this.promptEditEntry();
+        }
+      } else if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        this.promptEditCategory();
       } else if (e.key.toLowerCase() === 'd') {
         e.preventDefault();
-        this.promptDeleteEntry();
+        if (this.activePanel === 'categories') {
+          this.promptDeleteCategory();
+        } else {
+          this.promptDeleteEntry();
+        }
       } else if (e.key === '+' || e.key.toLowerCase() === 'c') {
         e.preventDefault();
         this.promptAddCategory();
       } else if (e.key === '-' || e.key.toLowerCase() === 'x') {
         e.preventDefault();
         this.promptDeleteCategory();
-      } else if (e.key.toLowerCase() === 'r') {
-        e.preventDefault();
-        this.promptRenameCategory();
       }
     });
   }
@@ -119,13 +171,17 @@ export class TuiEditor {
     const currentCategory = categories[this.selectedCategoryIdx];
     const entries = currentCategory ? currentCategory.entries.sort((a, b) => a.order - b.order) : [];
 
+    const showCatNum = state.data.showCategoryNumbers !== false;
+    const showEntNum = state.data.showEntryNumbers !== false;
+
     const categoriesListHtml = categories.map((cat, idx) => {
       const isSelected = idx === this.selectedCategoryIdx;
       const activeCls = isSelected ? 'active' : '';
+      const prefix = showCatNum ? `[${String(idx + 1).padStart(2, '0')}] ` : '';
       return `
         <div class="tui-list-item ${activeCls}" data-cat-idx="${idx}">
-          <span>[${String(idx + 1).padStart(2, '0')}] ${cat.name}</span>
-          <span style="font-size: 11px; opacity: 0.7;">(${cat.entries.length})</span>
+          <span>${prefix}${cat.name}</span>
+          <span style="font-size: 11px; opacity: 0.7; margin-left: auto;">${cat.icon || '[DIR]'} (${cat.entries.length})</span>
         </div>
       `;
     }).join('');
@@ -135,10 +191,11 @@ export class TuiEditor {
       : entries.map((ent, idx) => {
           const isSelected = idx === this.selectedEntryIdx;
           const activeCls = isSelected ? 'active' : '';
+          const prefix = showEntNum ? `[${String(idx + 1).padStart(2, '0')}] ` : '';
           return `
             <div class="tui-list-item ${activeCls}" data-ent-idx="${idx}">
-              <span>[${String(idx + 1).padStart(2, '0')}] <strong>${ent.title}</strong></span>
-              <span style="font-size: 12px; color: var(--term-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">- ${ent.url}</span>
+              <span>${prefix}<strong>${ent.title}</strong></span>
+              <span style="font-size: 12px; color: var(--term-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: auto;">${ent.url}</span>
             </div>
           `;
         }).join('');
@@ -147,6 +204,22 @@ export class TuiEditor {
       <div class="tui-header">
         <span>╔══════════════════════ ASCII DIRECTORY TUI MANAGER ══════════════════════╗</span>
         <button id="tui-btn-close" class="btn-retro-sm">[Q CLOSE]</button>
+      </div>
+
+      <div class="tui-toolbar">
+        <div class="tui-toggles">
+          <button id="tui-btn-toggle-cat-num" class="btn-retro-sm">
+            <span class="tui-key-badge">[1]</span> Cat Numbers: <span class="${showCatNum ? 'tui-badge-on' : 'tui-badge-off'}">[${showCatNum ? 'ON' : 'OFF'}]</span>
+          </button>
+          <button id="tui-btn-toggle-ent-num" class="btn-retro-sm">
+            <span class="tui-key-badge">[2]</span> Entry Numbers: <span class="${showEntNum ? 'tui-badge-on' : 'tui-badge-off'}">[${showEntNum ? 'ON' : 'OFF'}]</span>
+          </button>
+        </div>
+        <div class="tui-move-controls">
+          <span style="color: var(--term-fg-dim); font-size: 11px; margin-right: 6px;">Reorder Selected:</span>
+          <button id="tui-btn-move-up" class="btn-retro-sm"><span class="tui-key-badge">[U]</span> ▲ Move Up</button>
+          <button id="tui-btn-move-down" class="btn-retro-sm"><span class="tui-key-badge">[N]</span> ▼ Move Down</button>
+        </div>
       </div>
 
       <div class="tui-body">
@@ -173,13 +246,13 @@ export class TuiEditor {
         <div class="tui-keys">
           <button id="tui-btn-add-ent" class="btn-retro-sm"><span class="tui-key-badge">[A]</span> Add Entry</button>
           <button id="tui-btn-edit-ent" class="btn-retro-sm"><span class="tui-key-badge">[E]</span> Edit Entry</button>
-          <button id="tui-btn-del-ent" class="btn-retro-sm"><span class="tui-key-badge">[D]</span> Delete Entry</button>
+          <button id="tui-btn-del-ent" class="btn-retro-sm"><span class="tui-key-badge">[D]</span> Del Entry</button>
           <button id="tui-btn-add-cat" class="btn-retro-sm"><span class="tui-key-badge">[+]</span> Add Cat</button>
+          <button id="tui-btn-edit-cat" class="btn-retro-sm"><span class="tui-key-badge">[R]</span> Edit Cat</button>
           <button id="tui-btn-del-cat" class="btn-retro-sm"><span class="tui-key-badge">[-]</span> Del Cat</button>
-          <button id="tui-btn-ren-cat" class="btn-retro-sm"><span class="tui-key-badge">[R]</span> Rename</button>
         </div>
         <div>
-          <span style="color: var(--term-fg-dim);">[Tab/Arrows] Switch • [Q] Close Editor</span>
+          <span style="color: var(--term-fg-dim); font-size: 11px;">[Tab/Arrows] Switch • [U/N] Move • [1/2] Toggle # • [Q] Close</span>
         </div>
       </div>
     `;
@@ -191,6 +264,18 @@ export class TuiEditor {
   private bindClickEvents(): void {
     const closeBtn = document.getElementById('tui-btn-close');
     if (closeBtn) closeBtn.onclick = () => this.close();
+
+    const toggleCatNumBtn = document.getElementById('tui-btn-toggle-cat-num');
+    if (toggleCatNumBtn) toggleCatNumBtn.onclick = () => this.toggleCategoryNumbers();
+
+    const toggleEntNumBtn = document.getElementById('tui-btn-toggle-ent-num');
+    if (toggleEntNumBtn) toggleEntNumBtn.onclick = () => this.toggleEntryNumbers();
+
+    const moveUpBtn = document.getElementById('tui-btn-move-up');
+    if (moveUpBtn) moveUpBtn.onclick = () => this.moveSelectedItem('up');
+
+    const moveDownBtn = document.getElementById('tui-btn-move-down');
+    if (moveDownBtn) moveDownBtn.onclick = () => this.moveSelectedItem('down');
 
     const addEntBtn = document.getElementById('tui-btn-add-ent');
     if (addEntBtn) addEntBtn.onclick = () => this.promptAddEntry();
@@ -204,11 +289,11 @@ export class TuiEditor {
     const addCatBtn = document.getElementById('tui-btn-add-cat');
     if (addCatBtn) addCatBtn.onclick = () => this.promptAddCategory();
 
+    const editCatBtn = document.getElementById('tui-btn-edit-cat');
+    if (editCatBtn) editCatBtn.onclick = () => this.promptEditCategory();
+
     const delCatBtn = document.getElementById('tui-btn-del-cat');
     if (delCatBtn) delCatBtn.onclick = () => this.promptDeleteCategory();
-
-    const renCatBtn = document.getElementById('tui-btn-ren-cat');
-    if (renCatBtn) renCatBtn.onclick = () => this.promptRenameCategory();
 
     // Cat list items
     document.querySelectorAll('#tui-cat-list .tui-list-item').forEach(el => {
@@ -233,6 +318,182 @@ export class TuiEditor {
   private closeDialog(): void {
     const overlay = document.querySelector('.tui-dialog-overlay');
     if (overlay) overlay.remove();
+  }
+
+  public async toggleCategoryNumbers(): Promise<void> {
+    const current = state.data?.showCategoryNumbers !== false;
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showCategoryNumbers: !current })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        state.setData(data.data);
+        sound.playSuccessChime();
+        this.render();
+        if (this.onDataChangedCallback) this.onDataChangedCallback();
+      }
+    } catch (err) {
+      sound.playErrorBuzz();
+      console.error(err);
+    }
+  }
+
+  public async toggleEntryNumbers(): Promise<void> {
+    const current = state.data?.showEntryNumbers !== false;
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showEntryNumbers: !current })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        state.setData(data.data);
+        sound.playSuccessChime();
+        this.render();
+        if (this.onDataChangedCallback) this.onDataChangedCallback();
+      }
+    } catch (err) {
+      sound.playErrorBuzz();
+      console.error(err);
+    }
+  }
+
+  public async moveSelectedItem(direction: 'up' | 'down'): Promise<void> {
+    const categories = state.data?.categories || [];
+    if (categories.length === 0) return;
+
+    if (this.activePanel === 'categories') {
+      const cat = categories[this.selectedCategoryIdx];
+      if (!cat) return;
+
+      if (direction === 'up' && this.selectedCategoryIdx === 0) return;
+      if (direction === 'down' && this.selectedCategoryIdx === categories.length - 1) return;
+
+      try {
+        const res = await fetch(`/api/categories/${cat.id}/move`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          state.setData(data.data);
+          if (direction === 'up' && this.selectedCategoryIdx > 0) this.selectedCategoryIdx--;
+          if (direction === 'down' && this.selectedCategoryIdx < categories.length - 1) this.selectedCategoryIdx++;
+          sound.playKeyClick();
+          this.render();
+          if (this.onDataChangedCallback) this.onDataChangedCallback();
+        }
+      } catch (err) {
+        sound.playErrorBuzz();
+        console.error(err);
+      }
+    } else {
+      const currentCategory = categories[this.selectedCategoryIdx];
+      const entries = currentCategory?.entries || [];
+      const entry = entries[this.selectedEntryIdx];
+      if (!entry) return;
+
+      if (direction === 'up' && this.selectedEntryIdx === 0) return;
+      if (direction === 'down' && this.selectedEntryIdx === entries.length - 1) return;
+
+      try {
+        const res = await fetch(`/api/entries/${entry.id}/move`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          state.setData(data.data);
+          if (direction === 'up' && this.selectedEntryIdx > 0) this.selectedEntryIdx--;
+          if (direction === 'down' && this.selectedEntryIdx < entries.length - 1) this.selectedEntryIdx++;
+          sound.playKeyClick();
+          this.render();
+          if (this.onDataChangedCallback) this.onDataChangedCallback();
+        }
+      } catch (err) {
+        sound.playErrorBuzz();
+        console.error(err);
+      }
+    }
+  }
+
+  private promptAddCategory(): void {
+    this.showCategoryDialog('ADD NEW CATEGORY', { name: '', icon: '[DIR]' }, async (formData) => {
+      try {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formData.name, icon: formData.icon })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          state.setData(data.data);
+          this.selectedCategoryIdx = state.data.categories.length - 1;
+          sound.playSuccessChime();
+          this.closeDialog();
+          this.render();
+          if (this.onDataChangedCallback) this.onDataChangedCallback();
+        }
+      } catch (err) {
+        sound.playErrorBuzz();
+        console.error(err);
+      }
+    });
+  }
+
+  private promptEditCategory(): void {
+    const categories = state.data?.categories || [];
+    const cat = categories[this.selectedCategoryIdx];
+    if (!cat) return;
+
+    this.showCategoryDialog('EDIT CATEGORY', { name: cat.name, icon: cat.icon || '[DIR]' }, async (formData) => {
+      try {
+        const res = await fetch(`/api/categories/${cat.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formData.name, icon: formData.icon })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          state.setData(data.data);
+          sound.playSuccessChime();
+          this.closeDialog();
+          this.render();
+          if (this.onDataChangedCallback) this.onDataChangedCallback();
+        }
+      } catch (err) {
+        sound.playErrorBuzz();
+        console.error(err);
+      }
+    });
+  }
+
+  private async promptDeleteCategory(): Promise<void> {
+    const categories = state.data?.categories || [];
+    const cat = categories[this.selectedCategoryIdx];
+    if (!cat) return;
+
+    if (confirm(`Delete category "${cat.name}" and all its ${cat.entries.length} entries?`)) {
+      try {
+        const res = await fetch(`/api/categories/${cat.id}`, { method: 'DELETE' });
+        if (res.ok) {
+          const data = await res.json();
+          state.setData(data.data);
+          this.selectedCategoryIdx = Math.max(0, this.selectedCategoryIdx - 1);
+          sound.playBeep(300, 0.15, 'sawtooth');
+          this.render();
+          if (this.onDataChangedCallback) this.onDataChangedCallback();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
 
   private promptAddEntry(): void {
@@ -344,67 +605,54 @@ export class TuiEditor {
     }
   }
 
-  private promptAddCategory(): void {
-    const name = prompt('Enter new category name:');
-    if (!name) return;
-    const icon = prompt('Enter category icon/tag (e.g. [SRV]):', '[DIR]') || '[DIR]';
+  private showCategoryDialog(
+    title: string,
+    initial: { name: string; icon: string },
+    onSubmit: (data: typeof initial) => void
+  ): void {
+    this.closeDialog();
 
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, icon })
-    }).then(res => res.json()).then(data => {
-      if (data.data) {
-        state.setData(data.data);
-        this.selectedCategoryIdx = state.data.categories.length - 1;
-        sound.playSuccessChime();
-        this.render();
-        if (this.onDataChangedCallback) this.onDataChangedCallback();
-      }
-    });
-  }
+    const overlay = document.createElement('div');
+    overlay.className = 'tui-dialog-overlay';
 
-  private promptRenameCategory(): void {
-    const categories = state.data?.categories || [];
-    const cat = categories[this.selectedCategoryIdx];
-    if (!cat) return;
+    overlay.innerHTML = `
+      <div class="tui-dialog-box">
+        <div class="tui-dialog-title">+--[ ${title} ]--+</div>
+        <form id="tui-cat-form">
+          <div class="tui-form-group">
+            <label>Category Name:</label>
+            <input type="text" id="form-cat-name" value="${escapeHtml(initial.name)}" required placeholder="e.g. HOMELAB & INFRASTRUCTURE" />
+          </div>
+          <div class="tui-form-group">
+            <label>Tag / Icon (e.g. [SYS], [MEDIA], [DEV], [DIR]):</label>
+            <input type="text" id="form-cat-icon" value="${escapeHtml(initial.icon)}" placeholder="[DIR]" />
+          </div>
+          <div class="tui-dialog-actions">
+            <button type="button" id="form-cat-cancel" class="btn-retro">[CANCEL]</button>
+            <button type="submit" class="btn-retro">[SAVE CATEGORY]</button>
+          </div>
+        </form>
+      </div>
+    `;
 
-    const name = prompt('Enter updated category name:', cat.name);
-    if (!name) return;
-    const icon = prompt('Enter icon tag:', cat.icon || '[DIR]') || '[DIR]';
+    document.getElementById('tui-modal')?.appendChild(overlay);
 
-    fetch(`/api/categories/${cat.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, icon })
-    }).then(res => res.json()).then(data => {
-      if (data.data) {
-        state.setData(data.data);
-        sound.playSuccessChime();
-        this.render();
-        if (this.onDataChangedCallback) this.onDataChangedCallback();
-      }
-    });
-  }
+    const form = overlay.querySelector('#tui-cat-form') as HTMLFormElement;
+    const cancelBtn = overlay.querySelector('#form-cat-cancel') as HTMLButtonElement;
+    const nameInput = overlay.querySelector('#form-cat-name') as HTMLInputElement;
 
-  private promptDeleteCategory(): void {
-    const categories = state.data?.categories || [];
-    const cat = categories[this.selectedCategoryIdx];
-    if (!cat) return;
+    setTimeout(() => nameInput?.focus(), 50);
 
-    if (confirm(`Delete category "${cat.name}" and all its ${cat.entries.length} entries?`)) {
-      fetch(`/api/categories/${cat.id}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.data) {
-            state.setData(data.data);
-            this.selectedCategoryIdx = Math.max(0, this.selectedCategoryIdx - 1);
-            sound.playBeep(300, 0.15, 'sawtooth');
-            this.render();
-            if (this.onDataChangedCallback) this.onDataChangedCallback();
-          }
-        });
-    }
+    cancelBtn.onclick = () => this.closeDialog();
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const iconInput = overlay.querySelector('#form-cat-icon') as HTMLInputElement;
+      onSubmit({
+        name: nameInput.value.trim().toUpperCase(),
+        icon: iconInput.value.trim() || '[DIR]'
+      });
+    };
   }
 
   private showEntryDialog(

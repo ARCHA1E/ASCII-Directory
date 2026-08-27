@@ -24,9 +24,11 @@ export interface DirectoryData {
   subtitle: string;
   motd: string;
   systemName: string;
-  defaultTheme: 'green' | 'amber' | 'cyan' | 'white';
+  defaultTheme: 'green' | 'amber' | 'cyan' | 'white' | 'matrix';
   scanlines: boolean;
   audio: boolean;
+  showCategoryNumbers?: boolean;
+  showEntryNumbers?: boolean;
   categories: Category[];
   updatedAt: string;
 }
@@ -40,6 +42,8 @@ export const defaultDirectoryData: DirectoryData = {
   defaultTheme: "green",
   scanlines: true,
   audio: true,
+  showCategoryNumbers: true,
+  showEntryNumbers: true,
   updatedAt: new Date().toISOString(),
   categories: [
     {
@@ -58,136 +62,119 @@ export const defaultDirectoryData: DirectoryData = {
           tags: ["infra", "vm", "lxc"]
         },
         {
-          id: "ent_truenas",
-          title: "TrueNAS Scale",
-          url: "https://truenas.local",
-          description: "ZFS Storage Pool & NFS/SMB Shares",
+          id: "ent_pbs",
+          title: "Proxmox Backup Server",
+          url: "https://pbs.local:8007",
+          description: "Deduplicated VM/CT Backups",
           target: "_blank",
           order: 2,
-          tags: ["storage", "backup"]
+          tags: ["backup", "storage"]
+        },
+        {
+          id: "ent_opnsense",
+          title: "OPNsense Firewall",
+          url: "https://router.local",
+          description: "Core Gateway & WireGuard VPN",
+          target: "_blank",
+          order: 3,
+          tags: ["network", "security", "dns"]
         },
         {
           id: "ent_pihole",
-          title: "Pi-hole DNS",
+          title: "Pi-hole DNS Sinkhole",
           url: "http://pihole.local/admin",
-          description: "Network Ad-Blocker & Local DNS Gateway",
-          target: "_blank",
-          order: 3,
-          tags: ["dns", "security"]
-        },
-        {
-          id: "ent_portainer",
-          title: "Portainer CE",
-          url: "https://portainer.local:9443",
-          description: "Docker Container Management Dashboard",
+          description: "Network-wide Ad & Tracker Blocker",
           target: "_blank",
           order: 4,
-          tags: ["docker", "mgmt"]
+          tags: ["dns", "adblock"]
         }
       ]
     },
     {
       id: "cat_media",
       name: "MEDIA & ENTERTAINMENT",
-      icon: "[MED]",
+      icon: "[MEDIA]",
       order: 2,
       entries: [
         {
-          id: "ent_jellyfin",
-          title: "Jellyfin Media",
-          url: "https://jellyfin.local:8096",
-          description: "Self-Hosted Streaming Movie/TV Server",
+          id: "ent_plex",
+          title: "Plex Media Server",
+          url: "https://app.plex.tv",
+          description: "Movie & TV Show Streaming",
           target: "_blank",
           order: 1,
-          tags: ["media", "streaming"]
+          tags: ["streaming", "movies", "tv"]
         },
         {
-          id: "ent_plex",
-          title: "Plex Server",
-          url: "https://app.plex.tv",
-          description: "Personal Media Cloud Gateway",
+          id: "ent_jellyfin",
+          title: "Jellyfin Server",
+          url: "http://jellyfin.local:8096",
+          description: "Open Source Media System",
           target: "_blank",
           order: 2,
-          tags: ["media", "video"]
+          tags: ["streaming", "opensource"]
         },
         {
-          id: "ent_audiobooks",
-          title: "Audiobookshelf",
-          url: "https://audiobooks.local",
-          description: "Self-Hosted Audiobook & Podcast Server",
+          id: "ent_sonarr",
+          title: "Sonarr TV Manager",
+          url: "http://sonarr.local:8989",
+          description: "Automated TV Series Tracker",
           target: "_blank",
           order: 3,
-          tags: ["audio", "books"]
+          tags: ["automation", "pvr"]
+        },
+        {
+          id: "ent_radarr",
+          title: "Radarr Movie Manager",
+          url: "http://radarr.local:7878",
+          description: "Automated Movie Collection Tracker",
+          target: "_blank",
+          order: 4,
+          tags: ["automation", "movies"]
         }
       ]
     },
     {
-      id: "cat_dev",
-      name: "DEV & CLOUD SERVICES",
+      id: "cat_devtools",
+      name: "DEV TOOLS & STORAGE",
       icon: "[DEV]",
       order: 3,
       entries: [
         {
-          id: "ent_github",
-          title: "GitHub",
-          url: "https://github.com",
-          description: "Code Repositories & CI/CD Actions",
+          id: "ent_gitea",
+          title: "Gitea Git Service",
+          url: "http://git.local:3000",
+          description: "Self-hosted Code Version Control",
           target: "_blank",
           order: 1,
-          tags: ["git", "dev"]
+          tags: ["git", "code", "cicd"]
         },
         {
-          id: "ent_cloudflare",
-          title: "Cloudflare Zero Trust",
-          url: "https://dash.cloudflare.com",
-          description: "Tunnels, DNS & Edge Security Dashboard",
+          id: "ent_nextcloud",
+          title: "Nextcloud Hub",
+          url: "https://cloud.local",
+          description: "Private File Sync & Productivity Suite",
           target: "_blank",
           order: 2,
-          tags: ["network", "cloud"]
+          tags: ["cloud", "storage", "docs"]
+        },
+        {
+          id: "ent_portainer",
+          title: "Portainer CE",
+          url: "https://portainer.local:9443",
+          description: "Container & Stack Management GUI",
+          target: "_blank",
+          order: 3,
+          tags: ["docker", "containers"]
         },
         {
           id: "ent_grafana",
-          title: "Grafana & Prometheus",
+          title: "Grafana Dashboards",
           url: "http://grafana.local:3000",
-          description: "Infrastructure Metrics & Alert Monitoring",
+          description: "Cluster Metrics & Node Telemetry",
           target: "_blank",
-          order: 3,
-          tags: ["metrics", "monitoring"]
-        }
-      ]
-    },
-    {
-      id: "cat_bookmarks",
-      name: "QUICK LINKS & NETWORK",
-      icon: "[NET]",
-      order: 4,
-      entries: [
-        {
-          id: "ent_hn",
-          title: "Hacker News",
-          url: "https://news.ycombinator.com",
-          description: "Technology News & Discussions",
-          target: "_blank",
-          order: 1,
-          tags: ["news", "tech"]
-        },
-        {
-          id: "ent_archive",
-          title: "Internet Archive",
-          url: "https://archive.org",
-          description: "Wayback Machine & Digital Library",
-          target: "_blank",
-          order: 2,
-          tags: ["history", "web"]
-        },
-        {
-          id: "ent_tailscale",
-          title: "Tailscale Admin",
-          url: "https://login.tailscale.com/admin",
-          description: "Mesh VPN Mesh Network Control",
-          target: "_blank",
-          order: 3,
-          tags: ["vpn", "network"]
+          order: 4,
+          tags: ["monitoring", "telemetry"]
         }
       ]
     }

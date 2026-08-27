@@ -112,6 +112,28 @@ apiRouter.put('/entries/:id', requireAuth, async (req: Request, res: Response) =
   }
 });
 
+// Authenticated: Move Entry
+apiRouter.post('/entries/:id/move', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const entryId = req.params.id;
+    const { direction } = req.body;
+    if (direction !== 'up' && direction !== 'down') {
+      res.status(400).json({ error: 'direction must be "up" or "down"' });
+      return;
+    }
+
+    const data = await storage.moveEntry(entryId, direction);
+    if (!data) {
+      res.status(404).json({ error: 'Entry not found' });
+      return;
+    }
+
+    res.json({ success: true, data });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to move entry', details: err.message });
+  }
+});
+
 // Authenticated: Delete Entry
 apiRouter.delete('/entries/:id', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -161,6 +183,28 @@ apiRouter.put('/categories/:id', requireAuth, async (req: Request, res: Response
     res.json({ success: true, category, data });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to update category', details: err.message });
+  }
+});
+
+// Authenticated: Move Category
+apiRouter.post('/categories/:id/move', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const categoryId = req.params.id;
+    const { direction } = req.body;
+    if (direction !== 'up' && direction !== 'down') {
+      res.status(400).json({ error: 'direction must be "up" or "down"' });
+      return;
+    }
+
+    const data = await storage.moveCategory(categoryId, direction);
+    if (!data) {
+      res.status(404).json({ error: 'Category not found' });
+      return;
+    }
+
+    res.json({ success: true, data });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to move category', details: err.message });
   }
 });
 

@@ -32,7 +32,10 @@ export class StorageService {
   private readRaw(): DirectoryData {
     try {
       const raw = fs.readFileSync(this.dataFile, 'utf-8');
-      return JSON.parse(raw) as DirectoryData;
+      const parsed = JSON.parse(raw) as DirectoryData;
+      if (parsed.showCategoryNumbers === undefined) parsed.showCategoryNumbers = true;
+      if (parsed.showEntryNumbers === undefined) parsed.showEntryNumbers = true;
+      return parsed;
     } catch (err) {
       console.error('[STORAGE READ ERROR]', err);
       return defaultDirectoryData;
@@ -133,6 +136,37 @@ export class StorageService {
     });
   }
 
+  public async moveEntry(entryId: string, direction: 'up' | 'down'): Promise<DirectoryData | null> {
+    return this.serialize(() => {
+      const data = this.readRaw();
+      let found = false;
+
+      for (const cat of data.categories) {
+        const entries = cat.entries.sort((a, b) => a.order - b.order);
+        const idx = entries.findIndex(e => e.id === entryId);
+        if (idx !== -1) {
+          const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+          if (targetIdx >= 0 && targetIdx < entries.length) {
+            const temp = entries[idx];
+            entries[idx] = entries[targetIdx];
+            entries[targetIdx] = temp;
+            entries.forEach((e, i) => { e.order = i + 1; });
+            cat.entries = entries;
+            found = true;
+          }
+          break;
+        }
+      }
+
+      if (found) {
+        data.updatedAt = new Date().toISOString();
+        this.createBackup(data);
+        this.writeAtomic(data);
+      }
+      return data;
+    });
+  }
+
   public async deleteEntry(entryId: string): Promise<boolean> {
     return this.serialize(() => {
       const data = this.readRaw();
@@ -190,6 +224,29 @@ export class StorageService {
     });
   }
 
+  public async moveCategory(categoryId: string, direction: 'up' | 'down'): Promise<DirectoryData | null> {
+    return this.serialize(() => {
+      const data = this.readRaw();
+      const categories = data.categories.sort((a, b) => a.order - b.order);
+      const idx = categories.findIndex(c => c.id === categoryId);
+      if (idx === -1) return null;
+
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (targetIdx >= 0 && targetIdx < categories.length) {
+        const temp = categories[idx];
+        categories[idx] = categories[targetIdx];
+        categories[targetIdx] = temp;
+        categories.forEach((c, i) => { c.order = i + 1; });
+        data.categories = categories;
+
+        data.updatedAt = new Date().toISOString();
+        this.createBackup(data);
+        this.writeAtomic(data);
+      }
+      return data;
+    });
+  }
+
   public async deleteCategory(categoryId: string): Promise<boolean> {
     return this.serialize(() => {
       const data = this.readRaw();
@@ -215,6 +272,8 @@ export class StorageService {
       if (settings.defaultTheme) data.defaultTheme = settings.defaultTheme;
       if (typeof settings.scanlines === 'boolean') data.scanlines = settings.scanlines;
       if (typeof settings.audio === 'boolean') data.audio = settings.audio;
+      if (typeof settings.showCategoryNumbers === 'boolean') data.showCategoryNumbers = settings.showCategoryNumbers;
+      if (typeof settings.showEntryNumbers === 'boolean') data.showEntryNumbers = settings.showEntryNumbers;
 
       data.updatedAt = new Date().toISOString();
       this.createBackup(data);

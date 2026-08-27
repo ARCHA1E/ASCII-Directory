@@ -7,37 +7,37 @@
   "defaultTheme": "green",
   "scanlines": true,
   "audio": true,
-  "updatedAt": "2026-08-27T02:21:51.185Z",
+  "updatedAt": "2026-08-27T07:17:26.902Z",
   "categories": [
     {
       "id": "cat_homelab",
-      "name": "HOMELAB & INFRASTRUCTURE",
-      "icon": "[SYS]",
+      "name": "CORE INFRASTRUCTURE",
+      "icon": "[INFRA]",
       "order": 1,
       "entries": [
-        {
-          "id": "ent_pve",
-          "title": "Proxmox VE",
-          "url": "https://pve.local:8006",
-          "description": "Primary Hypervisor Cluster Node",
-          "target": "_blank",
-          "order": 1,
-          "tags": [
-            "infra",
-            "vm",
-            "lxc"
-          ]
-        },
         {
           "id": "ent_truenas",
           "title": "TrueNAS Scale",
           "url": "https://truenas.local",
           "description": "ZFS Storage Pool & NFS/SMB Shares",
           "target": "_blank",
-          "order": 2,
+          "order": 1,
           "tags": [
             "storage",
             "backup"
+          ]
+        },
+        {
+          "id": "ent_pve",
+          "title": "Proxmox VE",
+          "url": "https://pve.local:8006",
+          "description": "Primary Hypervisor Cluster Node",
+          "target": "_blank",
+          "order": 2,
+          "tags": [
+            "infra",
+            "vm",
+            "lxc"
           ]
         },
         {
@@ -198,5 +198,7 @@
         }
       ]
     }
-  ]
+  ],
+  "showCategoryNumbers": true,
+  "showEntryNumbers": true
 }
