@@ -3,7 +3,7 @@
 #  ASCII DIRECTORY // 1980s CRT Terminal Directory
 #  Automated Proxmox LXC Installer & Updater
 #  Run directly on your Proxmox Host shell:
-#    GH_TOKEN="your_token" bash <(curl -fsSL -H "Authorization: token your_token" https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
+#    bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
 # =============================================================================
 set -euo pipefail
 
@@ -90,21 +90,7 @@ if pct status "$CT_ID" &>/dev/null; then
   CT_EXISTS=true
 fi
 
-# ── GitHub Token (for private repo clone) ──────────────────────────────────────
-GH_TOKEN_VAL="${GH_TOKEN:-}"
-if [[ -z "$GH_TOKEN_VAL" ]]; then
-  GH_TOKEN_VAL=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
-    --title "GitHub Authentication" \
-    --inputbox "Enter your GitHub Personal Access Token (PAT) for private repo access:\n(Leave blank if repo is public)" \
-    11 64 3>&1 1>&2 2>&3) || exit 1
-fi
-
 REPO_URL="https://github.com/ARCHA1E/ASCII-Directory.git"
-if [[ -n "$GH_TOKEN_VAL" ]]; then
-  AUTH_REPO_URL="https://${GH_TOKEN_VAL}@github.com/ARCHA1E/ASCII-Directory.git"
-else
-  AUTH_REPO_URL="$REPO_URL"
-fi
 
 # =============================================================================
 #  UPGRADE PATH (Container Exists)
@@ -126,7 +112,7 @@ if [[ "$CT_EXISTS" == "true" ]]; then
   msg_info "Updating ASCII Directory in container $CT_ID"
   pct exec "$CT_ID" -- bash -c "
     cd /opt/ascii-directory
-    git pull '${AUTH_REPO_URL}' main
+    git pull origin main
     npm install
     npm run build
     systemctl restart ascii-directory
@@ -232,10 +218,8 @@ msg_ok "Prerequisites installed"
 msg_info "Cloning ASCII Directory repository"
 pct exec "$CT_ID" -- bash -c "
   rm -rf /opt/ascii-directory
-  git clone '${AUTH_REPO_URL}' /opt/ascii-directory
-  cd /opt/ascii-directory
-  git remote set-url origin https://github.com/ARCHA1E/ASCII-Directory.git
-" &>/dev/null || msg_error "Failed to clone repository. Check your GitHub PAT token."
+  git clone '${REPO_URL}' /opt/ascii-directory
+" &>/dev/null || msg_error "Failed to clone repository from GitHub."
 msg_ok "Repository cloned"
 
 msg_info "Installing dependencies and building application"

@@ -24,14 +24,11 @@
 
 ## ⚡ 1-Line Proxmox LXC Installer (Helper Script)
 
-Run this command directly in your **Proxmox VE Host Shell** to automatically download the Debian 12 template, create an unprivileged LXC container, install Node.js 22 LTS, clone this repository, build the app, and start the systemd service on boot:
+Run this single command in your **Proxmox VE Host Shell** to automatically download the Debian 12 template, create a lightweight unprivileged LXC container, install Node.js 22 LTS, clone this repository, build the app, and start the systemd service on boot:
 
 ```bash
-# For private repository (provide your GitHub PAT token):
-bash <(curl -fsSL -H "Authorization: token YOUR_GITHUB_TOKEN" https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
 ```
-
-*(If the repository is public, you can run simply `bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)`)*
 
 ---
 
