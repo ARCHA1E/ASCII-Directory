@@ -42,17 +42,23 @@ export class TerminalManager {
     // Focus & Blur toggle for hiding directory list
     this.inputEl.addEventListener('focus', () => {
       document.body.classList.add('terminal-typing-mode');
+      if (window.innerWidth <= 860) {
+        document.body.classList.add('mobile-terminal-active');
+      }
     });
 
     this.inputEl.addEventListener('blur', () => {
       if (this.inputEl?.value === '' && (!this.outputContainerEl || this.outputContainerEl.classList.contains('collapsed'))) {
-        document.body.classList.remove('terminal-typing-mode');
+        document.body.classList.remove('terminal-typing-mode', 'mobile-terminal-active');
       }
     });
 
     // Handle typing and dynamic password obfuscation
     this.inputEl.addEventListener('input', () => {
       document.body.classList.add('terminal-typing-mode');
+      if (window.innerWidth <= 860) {
+        document.body.classList.add('mobile-terminal-active');
+      }
       this.handleInputMasking();
       this.updateCursor();
     });
@@ -101,7 +107,7 @@ export class TerminalManager {
       }
     });
 
-    // Clear and minimize buttons
+    // Clear and close buttons
     const clearBtn = document.getElementById('btn-clear-term');
     if (clearBtn) {
       clearBtn.onclick = () => {
@@ -113,7 +119,7 @@ export class TerminalManager {
     if (closeBtn) {
       closeBtn.onclick = () => {
         this.outputContainerEl?.classList.add('collapsed');
-        document.body.classList.remove('terminal-typing-mode');
+        document.body.classList.remove('terminal-typing-mode', 'mobile-terminal-active');
         this.inputEl?.blur();
       };
     }
@@ -187,6 +193,9 @@ export class TerminalManager {
   public showOutputContainer(): void {
     if (this.outputContainerEl) {
       this.outputContainerEl.classList.remove('collapsed');
+    }
+    if (window.innerWidth <= 860) {
+      document.body.classList.add('mobile-terminal-active');
     }
   }
 

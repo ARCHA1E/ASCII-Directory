@@ -2,19 +2,21 @@ import { state } from './state.js';
 
 export class DirectoryRenderer {
   private bannerEl: HTMLElement | null = null;
+  private subtitleTextEl: HTMLElement | null = null;
   private listEl: HTMLElement | null = null;
   private motdEl: HTMLElement | null = null;
   private hostEl: HTMLElement | null = null;
 
   constructor() {
     this.bannerEl = document.getElementById('ascii-banner');
+    this.subtitleTextEl = document.getElementById('ascii-subtitle-text');
     this.listEl = document.getElementById('directory-list');
     this.motdEl = document.getElementById('system-motd');
     this.hostEl = document.getElementById('status-host');
   }
 
-  public getAsciiBanner(title: string, subtitle: string): string {
-    const rawAscii = [
+  public getRawAsciiArt(): string {
+    return [
       "   ,---,          .--.--.      ,----..      ,---,    ,---,             ,---,                                                   ___                                      ",
       "  '  .' \\        /  /    '.   /   /   \\  ,`--.' | ,`--.' |           .'  .' `\\     ,--,                                      ,--.'|_                                    ",
       " /  ;    '.     |  :  /`. /  |   :     : |   :  : |   :  :         ,---.'     \\  ,--.'|      __  ,-.                         |  | :,'     ,---.     __  ,-.             ",
@@ -30,21 +32,17 @@ export class DirectoryRenderer {
       "                               `---`                               '---'          ---`-'               `----'     `----'                                         \\  ' ; ",
       "                                                                                                                                                                  `--`  "
     ].join('\n');
-
-    const totalWidth = 148;
-    const sep = '='.repeat(totalWidth);
-    const rawFluff = `${title}  •  [${subtitle}]`;
-    const padLen = Math.max(0, Math.floor((totalWidth - rawFluff.length) / 2));
-    const centeredFluff = ' '.repeat(padLen) + rawFluff;
-
-    return `${rawAscii}\n${sep}\n${centeredFluff}\n${sep}`;
   }
 
   public render(): void {
     if (!state.data) return;
 
     if (this.bannerEl) {
-      this.bannerEl.textContent = this.getAsciiBanner(state.data.title, state.data.subtitle);
+      this.bannerEl.textContent = this.getRawAsciiArt();
+    }
+
+    if (this.subtitleTextEl) {
+      this.subtitleTextEl.textContent = `${state.data.title}  •  [${state.data.subtitle}]`;
     }
 
     if (this.hostEl) {

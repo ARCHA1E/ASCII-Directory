@@ -19,6 +19,14 @@
     <!-- Header Banner Area -->
     <header id="system-header">
       <div id="ascii-banner" class="ascii-art"></div>
+      
+      <!-- Dynamic Full-Width Subtitle Bar with Seamless ==== Separator Lines -->
+      <div id="ascii-subtitle-box" class="ascii-subtitle-box">
+        <div class="ascii-sep-line"></div>
+        <div id="ascii-subtitle-text" class="ascii-subtitle-text"></div>
+        <div class="ascii-sep-line"></div>
+      </div>
+
       <div class="system-statusbar">
         <div class="status-left">
           <span class="badge">[HOST: <span id="status-host">RETRO-GW-01</span>]</span>
@@ -64,7 +72,7 @@
           <span>TERMINAL BUFFER LOG</span>
           <div>
             <button id="btn-clear-term" class="btn-retro-sm">[CLEAR]</button>
-            <button id="btn-close-term" class="btn-retro-sm">[X]</button>
+            <button id="btn-close-term" class="btn-retro-sm" title="Close Terminal / Back to Directory">[X CLOSE]</button>
           </div>
         </div>
         <div id="terminal-output" class="terminal-log"></div>

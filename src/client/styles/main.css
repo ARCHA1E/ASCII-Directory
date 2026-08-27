@@ -63,7 +63,52 @@ html, body {
   color: var(--term-fg-bright);
   text-shadow: var(--term-glow-strong);
   overflow-x: hidden;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
+}
+
+/* Dynamic Full-Width Subtitle Bar with Seamless ==== Separator Lines */
+.ascii-subtitle-box {
+  width: 100%;
+  margin: 6px 0 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ascii-sep-line {
+  width: 100%;
+  height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--term-fg-bright);
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0px;
+  user-select: none;
+  opacity: 0.85;
+}
+
+.ascii-sep-line::before {
+  content: "================================================================================================================================================================================================================================================================================================================================================================================================";
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ascii-subtitle-text {
+  width: 100%;
+  text-align: center;
+  color: var(--term-fg-bright);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
 }
 
 .system-statusbar {
@@ -75,7 +120,7 @@ html, body {
   padding: 6px 12px;
   background: var(--term-highlight-bg);
   border: 1px solid var(--term-border);
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 14px;
 }
 
@@ -136,7 +181,7 @@ html, body {
   font-size: 13px;
 }
 
-/* Terminal Section (Above Directory) */
+/* Terminal Section (Above Directory on Desktop, Fixed on Mobile) */
 #terminal-section {
   margin-bottom: 18px;
 }
@@ -264,7 +309,7 @@ html, body {
   transition: opacity 0.15s ease;
 }
 
-/* Hide directory list when typing in terminal */
+/* Hide directory list when desktop terminal is actively typing */
 body.terminal-typing-mode #directory-content {
   display: none !important;
 }
@@ -364,6 +409,23 @@ body.terminal-typing-mode #directory-content {
   padding: 12px 16px;
   color: var(--term-fg-dim);
   font-style: italic;
+}
+
+/* Footer */
+#system-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--term-border);
+}
+
+.footer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--term-fg-dim);
 }
 
 /* TUI Modal & Window Styles */
@@ -704,8 +766,54 @@ body.terminal-typing-mode #directory-content {
   background: var(--term-highlight-bg);
 }
 
-/* Responsive Breakpoints */
+/* ─────────────────────────────────────────────────────────────────────────────
+   MOBILE PHONE & TABLET RESPONSIVE ARCHITECTURE (< 860px)
+   - Auto-fitting dynamic ASCII banner
+   - Persistent bottom terminal bar
+   - Full replacement when terminal is active (Either / Or, not both)
+   ───────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
+  /* Dynamic Auto-Shrinking ASCII Art to fit phone screens */
+  .ascii-art {
+    font-size: calc((100vw - 28px) / 92);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    width: 100%;
+    text-align: center;
+    overflow-x: hidden;
+  }
+
+  .ascii-subtitle-text {
+    font-size: 12px;
+    letter-spacing: 0px;
+  }
+
+  #terminal-container {
+    padding: 10px 10px 75px 10px;
+  }
+
+  /* Persistent Bottom Terminal Bar */
+  #terminal-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9000;
+    margin-bottom: 0;
+    background: var(--term-bg);
+    border-top: 2px solid var(--term-border);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.85);
+  }
+
+  .command-line-wrapper {
+    padding: 8px 10px;
+    border: none;
+  }
+
+  .shortcut-hints {
+    display: none;
+  }
+
   .directory-entry {
     grid-template-columns: 45px 1fr;
     grid-template-rows: auto auto auto;
@@ -725,7 +833,48 @@ body.terminal-typing-mode #directory-content {
     width: 100%;
     justify-content: space-between;
   }
-  .shortcut-hints {
-    display: none;
+
+  /* When Mobile Terminal is Active / Focused (EITHER / OR REPLACEMENT) */
+  body.mobile-terminal-active {
+    overflow: hidden;
+  }
+
+  body.mobile-terminal-active #system-header,
+  body.mobile-terminal-active #directory-content,
+  body.mobile-terminal-active #system-footer {
+    display: none !important;
+  }
+
+  body.mobile-terminal-active #terminal-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    background: var(--term-bg);
+    padding: 8px;
+    border-top: none;
+  }
+
+  body.mobile-terminal-active #terminal-output-container {
+    flex: 1;
+    display: flex !important;
+    max-height: calc(100vh - 58px);
+    max-height: calc(100dvh - 58px);
+    border: 1px solid var(--term-border);
+    margin-bottom: 6px;
+  }
+
+  body.mobile-terminal-active .terminal-log {
+    max-height: 100%;
+    flex: 1;
+  }
+
+  body.mobile-terminal-active .command-line-wrapper {
+    border: 1px solid var(--term-border);
   }
 }
