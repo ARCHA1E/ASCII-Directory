@@ -3,7 +3,7 @@
 #  ASCII DIRECTORY // 1980s CRT Terminal Directory
 #  Automated Proxmox LXC Installer & Updater
 #  Run directly on your Proxmox Host shell:
-#    bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
+#    GH_TOKEN="your_token" bash <(curl -fsSL -H "Authorization: token your_token" https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
 # =============================================================================
 set -euo pipefail
 
@@ -126,7 +126,7 @@ if [[ "$CT_EXISTS" == "true" ]]; then
   msg_info "Updating ASCII Directory in container $CT_ID"
   pct exec "$CT_ID" -- bash -c "
     cd /opt/ascii-directory
-    git pull origin main
+    git pull '${AUTH_REPO_URL}' main
     npm install
     npm run build
     systemctl restart ascii-directory
@@ -233,6 +233,8 @@ msg_info "Cloning ASCII Directory repository"
 pct exec "$CT_ID" -- bash -c "
   rm -rf /opt/ascii-directory
   git clone '${AUTH_REPO_URL}' /opt/ascii-directory
+  cd /opt/ascii-directory
+  git remote set-url origin https://github.com/ARCHA1E/ASCII-Directory.git
 " &>/dev/null || msg_error "Failed to clone repository. Check your GitHub PAT token."
 msg_ok "Repository cloned"
 
