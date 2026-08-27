@@ -30,6 +30,8 @@ Run this single command in your **Proxmox VE Host Shell** to automatically downl
 bash <(curl -fsSL https://raw.githubusercontent.com/ARCHA1E/ASCII-Directory/main/proxmox.sh)
 ```
 
+*(Instant real-time endpoint: `bash <(curl -fsSL -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/ARCHA1E/ASCII-Directory/contents/proxmox.sh)`)*
+
 ---
 
 ## ✨ Features
