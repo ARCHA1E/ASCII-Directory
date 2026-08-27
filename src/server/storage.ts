@@ -116,23 +116,59 @@ export class StorageService {
     });
   }
 
-  public async updateEntry(entryId: string, updates: Partial<DirectoryEntry>): Promise<DirectoryEntry | null> {
+  public async updateEntry(entryId: string, updates: Partial<DirectoryEntry> & { categoryId?: string }): Promise<DirectoryEntry | null> {
     return this.serialize(() => {
       const data = this.readRaw();
+      let currentCat: Category | null = null;
+      let entryIdx = -1;
+      let existingEntry: DirectoryEntry | null = null;
+
       for (const cat of data.categories) {
-        const entry = cat.entries.find(e => e.id === entryId);
-        if (entry) {
-          Object.assign(entry, updates, {
-            id: entry.id,
-            updatedAt: new Date().toISOString()
-          });
-          data.updatedAt = new Date().toISOString();
-          this.createBackup(data);
-          this.writeAtomic(data);
-          return entry;
+        const idx = cat.entries.findIndex(e => e.id === entryId);
+        if (idx !== -1) {
+          currentCat = cat;
+          entryIdx = idx;
+          existingEntry = cat.entries[idx];
+          break;
         }
       }
-      return null;
+
+      if (!currentCat || !existingEntry || entryIdx === -1) return null;
+
+      const targetCategoryId = updates.categoryId;
+      const isMovingCategory = targetCategoryId && targetCategoryId !== currentCat.id;
+
+      if (isMovingCategory) {
+        const targetCat = data.categories.find(c => c.id === targetCategoryId);
+        if (!targetCat) return null;
+
+        // Remove from current category
+        currentCat.entries.splice(entryIdx, 1);
+        currentCat.entries.forEach((e, i) => { e.order = i + 1; });
+
+        // Update fields
+        Object.assign(existingEntry, updates, {
+          id: existingEntry.id,
+          order: targetCat.entries.length + 1,
+          updatedAt: new Date().toISOString()
+        });
+        delete (existingEntry as any).categoryId;
+
+        // Add to new category
+        targetCat.entries.push(existingEntry);
+      } else {
+        // In-place update
+        Object.assign(existingEntry, updates, {
+          id: existingEntry.id,
+          updatedAt: new Date().toISOString()
+        });
+        delete (existingEntry as any).categoryId;
+      }
+
+      data.updatedAt = new Date().toISOString();
+      this.createBackup(data);
+      this.writeAtomic(data);
+      return existingEntry;
     });
   }
 

@@ -168,8 +168,14 @@ export class TuiEditor {
     if (!this.windowBoxEl || !state.data) return;
 
     const categories = state.data.categories.sort((a, b) => a.order - b.order);
+    if (this.selectedCategoryIdx >= categories.length) {
+      this.selectedCategoryIdx = Math.max(0, categories.length - 1);
+    }
     const currentCategory = categories[this.selectedCategoryIdx];
     const entries = currentCategory ? currentCategory.entries.sort((a, b) => a.order - b.order) : [];
+    if (this.selectedEntryIdx >= entries.length) {
+      this.selectedEntryIdx = Math.max(0, entries.length - 1);
+    }
 
     const showCatNum = state.data.showCategoryNumbers !== false;
     const showEntNum = state.data.showEntryNumbers !== false;
@@ -556,6 +562,7 @@ export class TuiEditor {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            categoryId: formData.categoryId,
             title: formData.title,
             url: formData.url,
             description: formData.description,
@@ -565,6 +572,16 @@ export class TuiEditor {
         if (res.ok) {
           const data = await res.json();
           state.setData(data.data);
+          
+          // If moved to a different category, switch active category to the new target
+          const newCatIdx = state.data?.categories.findIndex(c => c.id === formData.categoryId);
+          if (newCatIdx !== undefined && newCatIdx !== -1) {
+            this.selectedCategoryIdx = newCatIdx;
+            const targetCat = state.data?.categories[newCatIdx];
+            const newEntIdx = targetCat?.entries.findIndex(e => e.id === entry.id);
+            this.selectedEntryIdx = newEntIdx !== undefined && newEntIdx !== -1 ? newEntIdx : 0;
+          }
+
           sound.playSuccessChime();
           this.closeDialog();
           this.render();

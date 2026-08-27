@@ -7,7 +7,7 @@
   "defaultTheme": "green",
   "scanlines": true,
   "audio": true,
-  "updatedAt": "2026-08-27T07:17:26.902Z",
+  "updatedAt": "2026-08-27T07:23:49.050Z",
   "categories": [
     {
       "id": "cat_homelab",
@@ -16,24 +16,12 @@
       "order": 1,
       "entries": [
         {
-          "id": "ent_truenas",
-          "title": "TrueNAS Scale",
-          "url": "https://truenas.local",
-          "description": "ZFS Storage Pool & NFS/SMB Shares",
-          "target": "_blank",
-          "order": 1,
-          "tags": [
-            "storage",
-            "backup"
-          ]
-        },
-        {
           "id": "ent_pve",
           "title": "Proxmox VE",
           "url": "https://pve.local:8006",
           "description": "Primary Hypervisor Cluster Node",
           "target": "_blank",
-          "order": 2,
+          "order": 1,
           "tags": [
             "infra",
             "vm",
@@ -46,7 +34,7 @@
           "url": "http://pihole.local/admin",
           "description": "Network Ad-Blocker & Local DNS Gateway",
           "target": "_blank",
-          "order": 3,
+          "order": 2,
           "tags": [
             "dns",
             "security"
@@ -58,7 +46,7 @@
           "url": "https://portainer.local:9443",
           "description": "Docker Container Management Dashboard",
           "target": "_blank",
-          "order": 4,
+          "order": 3,
           "tags": [
             "docker",
             "mgmt"
@@ -107,6 +95,19 @@
             "audio",
             "books"
           ]
+        },
+        {
+          "id": "ent_truenas",
+          "title": "TrueNAS Scale [MOVED]",
+          "url": "https://truenas.local",
+          "description": "ZFS Storage Pool & NFS/SMB Shares",
+          "target": "_blank",
+          "order": 4,
+          "tags": [
+            "storage",
+            "backup"
+          ],
+          "updatedAt": "2026-08-27T07:23:49.050Z"
         }
       ]
     },
