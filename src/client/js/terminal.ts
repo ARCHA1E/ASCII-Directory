@@ -11,6 +11,7 @@ export class TerminalManager {
   private promptLabelEl: HTMLElement | null = null;
   private tuiEditor: TuiEditor;
   
+  private actualInput: string = '';
   private history: string[] = [];
   private historyIdx: number = -1;
   private activeAsyncSignal: { stopped: boolean } | null = null;
@@ -50,9 +51,10 @@ export class TerminalManager {
       }
     });
 
-    // Track cursor positioning
+    // Handle typing and dynamic password obfuscation
     this.inputEl.addEventListener('input', () => {
       document.body.classList.add('terminal-typing-mode');
+      this.handleInputMasking();
       this.updateCursor();
     });
     this.inputEl.addEventListener('click', () => this.updateCursor());
@@ -64,30 +66,37 @@ export class TerminalManager {
 
       if (e.key === 'Enter') {
         e.preventDefault();
-        const line = this.inputEl!.value.trim();
+        const line = (this.actualInput || this.inputEl!.value).trim();
+        const displayLine = this.inputEl!.value.trim();
         if (!line) return;
 
-        this.history.push(line);
+        this.history.push(displayLine);
         this.historyIdx = this.history.length;
         this.inputEl!.value = '';
+        this.actualInput = '';
         this.updateCursor();
 
-        await this.executeLine(line);
+        await this.executeLine(line, displayLine);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         if (this.history.length > 0) {
           if (this.historyIdx > 0) this.historyIdx--;
-          this.inputEl!.value = this.history[this.historyIdx] || '';
+          const histVal = this.history[this.historyIdx] || '';
+          this.inputEl!.value = histVal;
+          this.actualInput = histVal;
           this.updateCursor();
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (this.historyIdx < this.history.length - 1) {
           this.historyIdx++;
-          this.inputEl!.value = this.history[this.historyIdx] || '';
+          const histVal = this.history[this.historyIdx] || '';
+          this.inputEl!.value = histVal;
+          this.actualInput = histVal;
         } else {
           this.historyIdx = this.history.length;
           this.inputEl!.value = '';
+          this.actualInput = '';
         }
         this.updateCursor();
       }
@@ -109,6 +118,65 @@ export class TerminalManager {
         this.inputEl?.blur();
       };
     }
+  }
+
+  private handleInputMasking(): void {
+    if (!this.inputEl) return;
+    const currentVal = this.inputEl.value;
+    const loginPrefixRegex = /^(login\s+)/i;
+
+    if (!loginPrefixRegex.test(this.actualInput) && !loginPrefixRegex.test(currentVal)) {
+      this.actualInput = currentVal;
+      return;
+    }
+
+    const match = currentVal.match(loginPrefixRegex);
+    if (!match) {
+      this.actualInput = currentVal;
+      return;
+    }
+
+    const prefix = match[1];
+    const prefixLen = prefix.length;
+
+    if (!loginPrefixRegex.test(this.actualInput)) {
+      const rawPass = currentVal.slice(prefixLen);
+      this.actualInput = prefix + rawPass;
+      this.inputEl.value = prefix + '*'.repeat(rawPass.length);
+      const pos = this.inputEl.value.length;
+      this.inputEl.setSelectionRange(pos, pos);
+      return;
+    }
+
+    const oldMatch = this.actualInput.match(loginPrefixRegex)!;
+    const oldPrefix = oldMatch[1];
+    const oldPass = this.actualInput.slice(oldPrefix.length);
+    const newAfterPrefix = currentVal.slice(prefixLen);
+
+    if (newAfterPrefix.length > oldPass.length) {
+      const addedChars = newAfterPrefix.slice(oldPass.length);
+      const updatedPass = oldPass + addedChars;
+      this.actualInput = prefix + updatedPass;
+      this.inputEl.value = prefix + '*'.repeat(updatedPass.length);
+    } else if (newAfterPrefix.length < oldPass.length) {
+      const updatedPass = oldPass.slice(0, newAfterPrefix.length);
+      this.actualInput = prefix + updatedPass;
+      this.inputEl.value = prefix + '*'.repeat(updatedPass.length);
+    } else {
+      let updatedPass = '';
+      for (let i = 0; i < newAfterPrefix.length; i++) {
+        if (newAfterPrefix[i] === '*') {
+          updatedPass += oldPass[i] || '*';
+        } else {
+          updatedPass += newAfterPrefix[i];
+        }
+      }
+      this.actualInput = prefix + updatedPass;
+      this.inputEl.value = prefix + '*'.repeat(updatedPass.length);
+    }
+
+    const pos = this.inputEl.value.length;
+    this.inputEl.setSelectionRange(pos, pos);
   }
 
   private updateCursor(): void {
@@ -134,7 +202,7 @@ export class TerminalManager {
     this.outputLogEl.scrollTop = this.outputLogEl.scrollHeight;
   }
 
-  private async executeLine(rawLine: string): Promise<void> {
+  private async executeLine(rawLine: string, displayLine?: string): Promise<void> {
     if (this.activeAsyncSignal) {
       this.activeAsyncSignal.stopped = true;
       this.activeAsyncSignal = null;
@@ -144,7 +212,12 @@ export class TerminalManager {
     const cmdName = (parts[0] || '').toLowerCase();
     const args = parts.slice(1);
 
-    this.log(`${this.promptLabelEl?.textContent || '> '}${rawLine}`, 'log-cmd');
+    // If login command, log masked version to terminal output
+    const loggedText = (cmdName === 'login')
+      ? `${this.promptLabelEl?.textContent || '> '}login ${'*'.repeat(args.join(' ').length)}`
+      : `${this.promptLabelEl?.textContent || '> '}${displayLine || rawLine}`;
+
+    this.log(loggedText, 'log-cmd');
 
     // 1. Direct Number Shortcut to launch URL
     if (/^\d+$/.test(cmdName)) {
