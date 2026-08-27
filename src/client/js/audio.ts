@@ -98,7 +98,7 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   },
   odetojoy: {
     id: 'odetojoy',
-    title: 'Ode to Joy (Symphony No. 9 - Full Symphony Movement)',
+    title: 'Ode to Joy (Symphony No. 9 - Full Movement)',
     composer: 'Ludwig van Beethoven (1824)',
     source: 'Neon Genesis Evangelion / Public Domain',
     license: 'Public Domain',
@@ -138,10 +138,19 @@ export const TRACK_REGISTRY: Record<MusicTrack, TrackMetadata> = {
   }
 };
 
+// ── Complete Standard Musical Note Frequency Registry ────────────────────────
+export const N = {
+  C2: 65.41, CS2: 69.30, D2: 73.42, DS2: 77.78, EB2: 77.78, E2: 82.41, F2: 87.31, FS2: 92.50, G2: 98.00, GS2: 103.83, AB2: 103.83, A2: 110.00, AS2: 116.54, BB2: 116.54, B2: 123.47,
+  C3: 130.81, CS3: 138.59, D3: 146.83, DS3: 155.56, EB3: 155.56, E3: 164.81, F3: 174.61, FS3: 185.00, G3: 196.00, GS3: 207.65, AB3: 207.65, A3: 220.00, AS3: 233.08, BB3: 233.08, B3: 246.94,
+  C4: 261.63, CS4: 277.18, D4: 293.66, DS4: 311.13, EB4: 311.13, E4: 329.63, F4: 349.23, FS4: 369.99, G4: 392.00, GS4: 415.30, AB4: 415.30, A4: 440.00, AS4: 466.16, BB4: 466.16, B4: 493.88,
+  C5: 523.25, CS5: 554.37, D5: 587.33, DS5: 622.25, EB5: 622.25, E5: 659.25, F5: 698.46, FS5: 739.99, G5: 783.99, GS5: 830.61, AB5: 830.61, A5: 880.00, AS5: 932.33, BB5: 932.33, B5: 987.77,
+  C6: 1046.50
+} as const;
+
 interface SongNote {
-  f: number;      // Melody Frequency in Hz
-  d: number;      // Note Duration in seconds
-  b?: number;     // Bass Frequency in Hz
+  f: number;        // Melody Frequency in Hz
+  d: number;        // Note Duration in seconds
+  b?: number;       // Bass Frequency in Hz
   chord?: number[]; // Polyphonic harmony chords
   type?: OscillatorType;
 }
@@ -271,7 +280,7 @@ export class SoundSynthesizer {
   // Synthesize retro login success chime
   public playSuccessChime(): void {
     if (!this.enabled) return;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const notes = [N.C5, N.E5, N.G5, N.C6];
     notes.forEach((freq, idx) => {
       setTimeout(() => {
         this.playBeep(freq, 0.14, 'triangle', 0.09);
@@ -404,236 +413,220 @@ export class SoundSynthesizer {
     runNext();
   }
 
-  // ── 1. C418 - "SWEDEN" (FULL COMPLETE SONG ARRANGEMENT) ──────────────────────
+  // ── 1. C418 - "SWEDEN" (FULL COMPLETE 5-PART ARRANGEMENT) ────────────────────
   public playSwedenFull(loopSelf = true): void {
-    const fS4 = 369.99, d4 = 293.66, e4 = 329.63, g4 = 392.00, b3 = 246.94, a3 = 220.00, fS3 = 185.00;
-    const a4 = 440.00, b4 = 493.88, cS5 = 554.37, d5 = 587.33, e5 = 659.25, fS5 = 739.99;
-    const d3 = 146.83, g3 = 196.00, b2 = 123.47, a2 = 110.00, e3 = 164.81, d2 = 73.42, g2 = 98.00;
-
     const fullSong: SongNote[] = [
       // ── SECTION A: First Theme Statement ──
-      { f: fS4, d: 0.9, b: d3, chord: [d4, a3] },
-      { f: d4,  d: 0.7 },
-      { f: e4,  d: 0.7 },
-      { f: fS4, d: 0.9, b: g3, chord: [b3, d4] },
-      { f: g4,  d: 0.8 },
-      { f: fS4, d: 0.8 },
-      { f: e4,  d: 0.9, b: b2, chord: [d4, fS3] },
-      { f: d4,  d: 0.7 },
-      { f: b3,  d: 0.7 },
-      { f: d4,  d: 0.9, b: g3, chord: [b3, d4] },
-      { f: e4,  d: 0.9 },
-      { f: d4,  d: 1.4, b: d2 },
+      { f: N.FS4, d: 0.9, b: N.D3, chord: [N.D4, N.A3] },
+      { f: N.D4,  d: 0.7 },
+      { f: N.E4,  d: 0.7 },
+      { f: N.FS4, d: 0.9, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.G4,  d: 0.8 },
+      { f: N.FS4, d: 0.8 },
+      { f: N.E4,  d: 0.9, b: N.B2, chord: [N.D4, N.FS3] },
+      { f: N.D4,  d: 0.7 },
+      { f: N.B3,  d: 0.7 },
+      { f: N.D4,  d: 0.9, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.E4,  d: 0.9 },
+      { f: N.D4,  d: 1.4, b: N.D2 },
 
       // ── SECTION A2: Second Phrase with Rising A4 ──
-      { f: fS4, d: 0.9, b: d3, chord: [d4, a3] },
-      { f: a4,  d: 0.7 },
-      { f: g4,  d: 0.7 },
-      { f: fS4, d: 0.9, b: g3, chord: [b3, d4] },
-      { f: e4,  d: 0.8 },
-      { f: d4,  d: 0.8 },
-      { f: b3,  d: 0.9, b: b2, chord: [d4, fS3] },
-      { f: d4,  d: 0.7 },
-      { f: e4,  d: 0.7 },
-      { f: fS4, d: 0.9, b: a2, chord: [cS4, e4] },
-      { f: e4,  d: 0.9 },
-      { f: d4,  d: 1.6, b: d3 },
+      { f: N.FS4, d: 0.9, b: N.D3, chord: [N.D4, N.A3] },
+      { f: N.A4,  d: 0.7 },
+      { f: N.G4,  d: 0.7 },
+      { f: N.FS4, d: 0.9, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.E4,  d: 0.8 },
+      { f: N.D4,  d: 0.8 },
+      { f: N.B3,  d: 0.9, b: N.B2, chord: [N.D4, N.FS3] },
+      { f: N.D4,  d: 0.7 },
+      { f: N.E4,  d: 0.7 },
+      { f: N.FS4, d: 0.9, b: N.A2, chord: [N.CS4, N.E4] },
+      { f: N.E4,  d: 0.9 },
+      { f: N.D4,  d: 1.6, b: N.D3 },
 
       // ── SECTION B: Main Chorus Swell & High Octave Melody ──
-      { f: a4,  d: 0.8, b: g2, chord: [d4, g4] },
-      { f: b4,  d: 0.7 },
-      { f: d5,  d: 1.1, b: d3, chord: [fS4, a4] },
-      { f: cS5, d: 0.7 },
-      { f: b4,  d: 0.7 },
-      { f: a4,  d: 1.0, b: e3, chord: [g4, b3] },
-      { f: fS4, d: 0.7 },
-      { f: d4,  d: 0.7 },
-      { f: e4,  d: 0.8, b: a2, chord: [cS4, e4] },
-      { f: fS4, d: 0.8 },
-      { f: g4,  d: 0.8 },
-      { f: fS4, d: 0.8, b: d3, chord: [a3, d4] },
-      { f: e4,  d: 1.4 },
+      { f: N.A4,  d: 0.8, b: N.G2, chord: [N.D4, N.G4] },
+      { f: N.B4,  d: 0.7 },
+      { f: N.D5,  d: 1.1, b: N.D3, chord: [N.FS4, N.A4] },
+      { f: N.CS5, d: 0.7 },
+      { f: N.B4,  d: 0.7 },
+      { f: N.A4,  d: 1.0, b: N.E3, chord: [N.G4, N.B3] },
+      { f: N.FS4, d: 0.7 },
+      { f: N.D4,  d: 0.7 },
+      { f: N.E4,  d: 0.8, b: N.A2, chord: [N.CS4, N.E4] },
+      { f: N.FS4, d: 0.8 },
+      { f: N.G4,  d: 0.8 },
+      { f: N.FS4, d: 0.8, b: N.D3, chord: [N.A3, N.D4] },
+      { f: N.E4,  d: 1.4 },
 
       // ── SECTION B2: Climax Variation ──
-      { f: a4,  d: 0.8, b: g2, chord: [d4, g4] },
-      { f: b4,  d: 0.7 },
-      { f: d5,  d: 0.9, b: d3, chord: [fS4, a4] },
-      { f: e5,  d: 0.9 },
-      { f: d5,  d: 0.9, b: b2, chord: [fS4, d4] },
-      { f: b4,  d: 0.7 },
-      { f: a4,  d: 0.9, b: g3, chord: [b3, d4] },
-      { f: fS4, d: 0.7 },
-      { f: e4,  d: 0.7 },
-      { f: d4,  d: 0.8, b: d3, chord: [a3, d4] },
-      { f: b3,  d: 0.7 },
-      { f: d4,  d: 0.9, b: g3 },
-      { f: e4,  d: 0.9 },
-      { f: d4,  d: 1.8, b: d2 },
+      { f: N.A4,  d: 0.8, b: N.G2, chord: [N.D4, N.G4] },
+      { f: N.B4,  d: 0.7 },
+      { f: N.D5,  d: 0.9, b: N.D3, chord: [N.FS4, N.A4] },
+      { f: N.E5,  d: 0.9 },
+      { f: N.D5,  d: 0.9, b: N.B2, chord: [N.FS4, N.D4] },
+      { f: N.B4,  d: 0.7 },
+      { f: N.A4,  d: 0.9, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.FS4, d: 0.7 },
+      { f: N.E4,  d: 0.7 },
+      { f: N.D4,  d: 0.8, b: N.D3, chord: [N.A3, N.D4] },
+      { f: N.B3,  d: 0.7 },
+      { f: N.D4,  d: 0.9, b: N.G3 },
+      { f: N.E4,  d: 0.9 },
+      { f: N.D4,  d: 1.8, b: N.D2 },
 
       // ── SECTION C: Soft Resolving Outro ──
-      { f: fS4, d: 0.9, b: d3, chord: [a3, d4] },
-      { f: d4,  d: 0.7 },
-      { f: e4,  d: 0.7 },
-      { f: d4,  d: 0.9, b: g3, chord: [b3, d4] },
-      { f: b3,  d: 0.7 },
-      { f: a3,  d: 0.7 },
-      { f: b3,  d: 0.9, b: b2 },
-      { f: d4,  d: 0.9, b: g3 },
-      { f: e4,  d: 0.9 },
-      { f: d4,  d: 2.2, b: d2, chord: [fS3, a3, d4] }
+      { f: N.FS4, d: 0.9, b: N.D3, chord: [N.A3, N.D4] },
+      { f: N.D4,  d: 0.7 },
+      { f: N.E4,  d: 0.7 },
+      { f: N.D4,  d: 0.9, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.B3,  d: 0.7 },
+      { f: N.A3,  d: 0.7 },
+      { f: N.B3,  d: 0.9, b: N.B2 },
+      { f: N.D4,  d: 0.9, b: N.G3 },
+      { f: N.E4,  d: 0.9 },
+      { f: N.D4,  d: 2.2, b: N.D2, chord: [N.FS3, N.A3, N.D4] }
     ];
 
     this.playSongSequence(fullSong, 'sweden', loopSelf);
   }
 
-  // ── 2. C418 - "SUBWOOFER LULLABY" (FULL COMPLETE SONG ARRANGEMENT) ────────────
+  // ── 2. C418 - "SUBWOOFER LULLABY" (FULL COMPLETE 5-PART ARRANGEMENT) ─────────
   public playSubwooferFull(loopSelf = true): void {
-    const c5 = 523.25, g4 = 392.00, e4 = 329.63, d5 = 587.33, f4 = 349.23, b4 = 493.88, c4 = 261.63, a4 = 440.00;
-    const e5 = 659.25, f5 = 698.46, g5 = 783.99, a2 = 110.00, c3 = 130.81, f2 = 87.31, g2 = 98.00, c2 = 65.41;
-
     const fullSong: SongNote[] = [
       // ── SECTION A: Initial Music-Box Theme ──
-      { f: c5, d: 0.6, b: a2, chord: [c4, e4] }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: d5, d: 0.6, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: f4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: c5, d: 0.6, b: c3, chord: [e4, g4] }, { f: b4, d: 0.4 }, { f: g4, d: 0.5 }, { f: e4, d: 0.4 },
-      { f: f4, d: 0.5, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: c4, d: 0.9 },
+      { f: N.C5, d: 0.6, b: N.A2, chord: [N.C4, N.E4] }, { f: N.G4, d: 0.4 }, { f: N.E4, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.D5, d: 0.6, b: N.F2, chord: [N.A3, N.C4] }, { f: N.G4, d: 0.4 }, { f: N.F4, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.C5, d: 0.6, b: N.C3, chord: [N.E4, N.G4] }, { f: N.B4, d: 0.4 }, { f: N.G4, d: 0.5 }, { f: N.E4, d: 0.4 },
+      { f: N.F4, d: 0.5, b: N.F2, chord: [N.A3, N.C4] }, { f: N.G4, d: 0.4 }, { f: N.C4, d: 0.9 },
 
       // ── SECTION A2: Second Theme Development ──
-      { f: c5, d: 0.6, b: a2, chord: [c4, e4] }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: d5, d: 0.6, b: f2, chord: [a3, c4] }, { f: g4, d: 0.4 }, { f: f4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: e5, d: 0.7, b: g2, chord: [b3, d4] }, { f: d5, d: 0.5 }, { f: c5, d: 0.5 }, { f: b4, d: 0.4 },
-      { f: a4, d: 0.5, b: c3, chord: [e4, g4] }, { f: g4, d: 0.4 }, { f: c5, d: 1.1 },
+      { f: N.C5, d: 0.6, b: N.A2, chord: [N.C4, N.E4] }, { f: N.G4, d: 0.4 }, { f: N.E4, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.D5, d: 0.6, b: N.F2, chord: [N.A3, N.C4] }, { f: N.G4, d: 0.4 }, { f: N.F4, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.E5, d: 0.7, b: N.G2, chord: [N.B3, N.D4] }, { f: N.D5, d: 0.5 }, { f: N.C5, d: 0.5 }, { f: N.B4, d: 0.4 },
+      { f: N.A4, d: 0.5, b: N.C3, chord: [N.E4, N.G4] }, { f: N.G4, d: 0.4 }, { f: N.C5, d: 1.1 },
 
       // ── SECTION B: Soaring High Octave Melody ──
-      { f: e5, d: 0.6, b: c3, chord: [g4, c5] }, { f: g4, d: 0.4 }, { f: c5, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: f5, d: 0.6, b: f2, chord: [a4, c5] }, { f: g4, d: 0.4 }, { f: d5, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: e5, d: 0.6, b: a2, chord: [c5, e5] }, { f: d5, d: 0.4 }, { f: c5, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: a4, d: 0.5, b: f2, chord: [c4, f4] }, { f: b4, d: 0.4 }, { f: c5, d: 1.0 },
+      { f: N.E5, d: 0.6, b: N.C3, chord: [N.G4, N.C5] }, { f: N.G4, d: 0.4 }, { f: N.C5, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.F5, d: 0.6, b: N.F2, chord: [N.A4, N.C5] }, { f: N.G4, d: 0.4 }, { f: N.D5, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.E5, d: 0.6, b: N.A2, chord: [N.C5, N.E5] }, { f: N.D5, d: 0.4 }, { f: N.C5, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.A4, d: 0.5, b: N.F2, chord: [N.C4, N.F4] }, { f: N.B4, d: 0.4 }, { f: N.C5, d: 1.0 },
 
       // ── SECTION B2: Warm Chime Resolution ──
-      { f: g5, d: 0.7, b: c3, chord: [e4, g4] }, { f: e5, d: 0.5 }, { f: d5, d: 0.5 }, { f: c5, d: 0.5 },
-      { f: d5, d: 0.6, b: g2, chord: [b3, d4] }, { f: e5, d: 0.5 }, { f: c5, d: 0.6, b: a2 }, { f: a4, d: 0.4 },
-      { f: g4, d: 0.5, b: f2 }, { f: e4, d: 0.4 }, { f: d4, d: 0.5 }, { f: c4, d: 1.2, b: c2 },
+      { f: N.G5, d: 0.7, b: N.C3, chord: [N.E4, N.G4] }, { f: N.E5, d: 0.5 }, { f: N.D5, d: 0.5 }, { f: N.C5, d: 0.5 },
+      { f: N.D5, d: 0.6, b: N.G2, chord: [N.B3, N.D4] }, { f: N.E5, d: 0.5 }, { f: N.C5, d: 0.6, b: N.A2 }, { f: N.A4, d: 0.4 },
+      { f: N.G4, d: 0.5, b: N.F2 }, { f: N.E4, d: 0.4 }, { f: N.D4, d: 0.5 }, { f: N.C4, d: 1.2, b: N.C2 },
 
       // ── SECTION C: Peaceful Fade ──
-      { f: c5, d: 0.6, b: a2 }, { f: g4, d: 0.4 }, { f: e4, d: 0.5 }, { f: g4, d: 0.4 },
-      { f: d5, d: 0.6, b: f2 }, { f: g4, d: 0.4 }, { f: c4, d: 1.8, b: c2, chord: [e4, g4, c5] }
+      { f: N.C5, d: 0.6, b: N.A2 }, { f: N.G4, d: 0.4 }, { f: N.E4, d: 0.5 }, { f: N.G4, d: 0.4 },
+      { f: N.D5, d: 0.6, b: N.F2 }, { f: N.G4, d: 0.4 }, { f: N.C4, d: 1.8, b: N.C2, chord: [N.E4, N.G4, N.C5] }
     ];
 
     this.playSongSequence(fullSong, 'subwoofer', loopSelf);
   }
 
-  // ── 3. C418 - "WET HANDS" (FULL COMPLETE SONG ARRANGEMENT) ────────────────────
+  // ── 3. C418 - "WET HANDS" (FULL COMPLETE 5-PART ARRANGEMENT) ─────────────────
   public playWetHandsFull(loopSelf = true): void {
-    const a3 = 220.00, cS4 = 277.18, e4 = 329.63, gS4 = 415.30, a4 = 440.00, b4 = 493.88, cS5 = 554.37, d5 = 587.33, e5 = 659.25;
-    const fS4 = 369.99, fS3 = 185.00, d3 = 146.83, d4 = 293.66, e3 = 164.81, gS3 = 207.65, b3 = 246.94, a2 = 110.00;
-
     const fullSong: SongNote[] = [
       // ── SECTION A: Wave 1 Arpeggios ──
-      { f: a3,  d: 0.4, b: a2 }, { f: cS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: gS4, d: 0.5 },
-      { f: a4,  d: 0.6 },        { f: gS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: cS4, d: 0.5 },
-      { f: fS3, d: 0.4, b: fS3 / 2 }, { f: a3, d: 0.4 }, { f: cS4, d: 0.4 }, { f: e4, d: 0.5 },
-      { f: fS4, d: 0.6 },        { f: e4,  d: 0.4 }, { f: cS4, d: 0.4 }, { f: a3,  d: 0.7 },
+      { f: N.A3,  d: 0.4, b: N.A2 }, { f: N.CS4, d: 0.4 }, { f: N.E4,  d: 0.4 }, { f: N.GS4, d: 0.5 },
+      { f: N.A4,  d: 0.6 },          { f: N.GS4, d: 0.4 }, { f: N.E4,  d: 0.4 }, { f: N.CS4, d: 0.5 },
+      { f: N.FS3, d: 0.4, b: N.FS2 }, { f: N.A3,  d: 0.4 }, { f: N.CS4, d: 0.4 }, { f: N.E4,  d: 0.5 },
+      { f: N.FS4, d: 0.6 },          { f: N.E4,  d: 0.4 }, { f: N.CS4, d: 0.4 }, { f: N.A3,  d: 0.7 },
 
       // ── SECTION A2: Wave 2 (D Major to E Major) ──
-      { f: d3,  d: 0.4, b: d3 / 2 }, { f: fS3, d: 0.4 }, { f: a3,  d: 0.4 }, { f: cS4, d: 0.5 },
-      { f: d4,  d: 0.6 },        { f: cS4, d: 0.4 }, { f: a3,  d: 0.4 }, { f: fS3, d: 0.5 },
-      { f: e3,  d: 0.4, b: e3 / 2 }, { f: gS3, d: 0.4 }, { f: b3,  d: 0.4 }, { f: d4,  d: 0.5 },
-      { f: e4,  d: 0.6 },        { f: d4,  d: 0.4 }, { f: b3,  d: 0.4 }, { f: gS3, d: 0.7 },
+      { f: N.D3,  d: 0.4, b: N.D2 }, { f: N.FS3, d: 0.4 }, { f: N.A3,  d: 0.4 }, { f: N.CS4, d: 0.5 },
+      { f: N.D4,  d: 0.6 },          { f: N.CS4, d: 0.4 }, { f: N.A3,  d: 0.4 }, { f: N.FS3, d: 0.5 },
+      { f: N.E3,  d: 0.4, b: N.E2 }, { f: N.GS3, d: 0.4 }, { f: N.B3,  d: 0.4 }, { f: N.D4,  d: 0.5 },
+      { f: N.E4,  d: 0.6 },          { f: N.D4,  d: 0.4 }, { f: N.B3,  d: 0.4 }, { f: N.GS3, d: 0.7 },
 
       // ── SECTION B: Main High Melodic Piano Line ──
-      { f: a3,  d: 0.4, b: a2 }, { f: e4,  d: 0.4 }, { f: a4,  d: 0.5 }, { f: b4,  d: 0.4 },
-      { f: cS5, d: 0.7, b: a2 }, { f: b4,  d: 0.4 }, { f: a4,  d: 0.4 }, { f: gS4, d: 0.5 },
-      { f: fS4, d: 0.6, b: fS3 }, { f: cS4, d: 0.4 }, { f: fS4, d: 0.4 }, { f: gS4, d: 0.5 },
-      { f: a4,  d: 0.7 },        { f: gS4, d: 0.4 }, { f: fS4, d: 0.4 }, { f: e4,  d: 0.6 },
+      { f: N.A3,  d: 0.4, b: N.A2 }, { f: N.E4,  d: 0.4 }, { f: N.A4,  d: 0.5 }, { f: N.B4,  d: 0.4 },
+      { f: N.CS5, d: 0.7, b: N.A2 }, { f: N.B4,  d: 0.4 }, { f: N.A4,  d: 0.4 }, { f: N.GS4, d: 0.5 },
+      { f: N.FS4, d: 0.6, b: N.FS3 }, { f: N.CS4, d: 0.4 }, { f: N.FS4, d: 0.4 }, { f: N.GS4, d: 0.5 },
+      { f: N.A4,  d: 0.7 },          { f: N.GS4, d: 0.4 }, { f: N.FS4, d: 0.4 }, { f: N.E4,  d: 0.6 },
 
       // ── SECTION B2: Emotional High Climax ──
-      { f: d4,  d: 0.4, b: d3 }, { f: fS4, d: 0.4 }, { f: a4,  d: 0.5 }, { f: b4,  d: 0.4 },
-      { f: cS5, d: 0.6, b: d3 }, { f: d5,  d: 0.5 }, { f: cS5, d: 0.5 }, { f: b4,  d: 0.4 },
-      { f: a4,  d: 0.7, b: a2 }, { f: e4,  d: 0.4 }, { f: cS4, d: 0.4 }, { f: b3,  d: 0.5 },
-      { f: a3,  d: 1.4, b: a2 },
+      { f: N.D4,  d: 0.4, b: N.D3 }, { f: N.FS4, d: 0.4 }, { f: N.A4,  d: 0.5 }, { f: N.B4,  d: 0.4 },
+      { f: N.CS5, d: 0.6, b: N.D3 }, { f: N.D5,  d: 0.5 }, { f: N.CS5, d: 0.5 }, { f: N.B4,  d: 0.4 },
+      { f: N.A4,  d: 0.7, b: N.A2 }, { f: N.E4,  d: 0.4 }, { f: N.CS4, d: 0.4 }, { f: N.B3,  d: 0.5 },
+      { f: N.A3,  d: 1.4, b: N.A2 },
 
       // ── SECTION C: Floating Outro Arpeggio ──
-      { f: a3,  d: 0.4, b: a2 }, { f: cS4, d: 0.4 }, { f: e4,  d: 0.4 }, { f: a4,  d: 0.5 },
-      { f: cS5, d: 0.6 },        { f: e5,  d: 0.7 }, { f: cS5, d: 0.5 }, { f: a4,  d: 0.4 },
-      { f: e4,  d: 0.5 },        { f: cS4, d: 0.5 }, { f: a3,  d: 2.0, b: a2 }
+      { f: N.A3,  d: 0.4, b: N.A2 }, { f: N.CS4, d: 0.4 }, { f: N.E4,  d: 0.4 }, { f: N.A4,  d: 0.5 },
+      { f: N.CS5, d: 0.6 },          { f: N.E5,  d: 0.7 }, { f: N.CS5, d: 0.5 }, { f: N.A4,  d: 0.4 },
+      { f: N.E4,  d: 0.5 },          { f: N.CS4, d: 0.5 }, { f: N.A3,  d: 2.0, b: N.A2 }
     ];
 
     this.playSongSequence(fullSong, 'wethands', loopSelf);
   }
 
-  // ── 4. C418 - "MICE ON VENUS" (FULL COMPLETE SONG ARRANGEMENT) ────────────────
+  // ── 4. C418 - "MICE ON VENUS" (FULL COMPLETE 5-PART ARRANGEMENT) ─────────────
   public playMiceOnVenusFull(loopSelf = true): void {
-    const d4 = 293.66, fS4 = 369.99, a4 = 440.00, b4 = 493.88, e4 = 329.63, g4 = 392.00, cS4 = 277.18;
-    const d5 = 587.33, e5 = 659.25, fS5 = 739.99, g5 = 783.99, d3 = 146.83, g3 = 196.00, b2 = 123.47, a2 = 110.00;
-
     const fullSong: SongNote[] = [
       // ── SECTION A: Quiet Piano Intro ──
-      { f: d4, d: 0.5, b: d3 }, { f: fS4, d: 0.5 }, { f: a4, d: 0.6 }, { f: b4, d: 0.6 },
-      { f: a4, d: 0.5 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.7, b: g3 }, { f: d4, d: 0.5 },
-      { f: fS4, d: 0.5 }, { f: g4, d: 0.6 }, { f: fS4, d: 0.5 }, { f: e4, d: 0.5, b: b2 },
-      { f: d4, d: 0.6 }, { f: cS4, d: 0.5 }, { f: d4, d: 1.2, b: d3 },
+      { f: N.D4, d: 0.5, b: N.D3 }, { f: N.FS4, d: 0.5 }, { f: N.A4, d: 0.6 }, { f: N.B4, d: 0.6 },
+      { f: N.A4, d: 0.5 }, { f: N.FS4, d: 0.5 }, { f: N.E4, d: 0.7, b: N.G3 }, { f: N.D4, d: 0.5 },
+      { f: N.FS4, d: 0.5 }, { f: N.G4, d: 0.6 }, { f: N.FS4, d: 0.5 }, { f: N.E4, d: 0.5, b: N.B2 },
+      { f: N.D4, d: 0.6 }, { f: N.CS4, d: 0.5 }, { f: N.D4, d: 1.2, b: N.D3 },
 
       // ── SECTION A2: Piano Response Phrase ──
-      { f: d4, d: 0.5, b: d3 }, { f: fS4, d: 0.5 }, { f: a4, d: 0.5 }, { f: d5, d: 0.7, b: a2 },
-      { f: cS5, d: 0.5 }, { f: b4, d: 0.5 }, { f: a4, d: 0.6, b: g3 }, { f: fS4, d: 0.5 },
-      { f: g4, d: 0.5 }, { f: a4, d: 0.6 }, { f: g4, d: 0.5 }, { f: fS4, d: 0.5, b: b2 },
-      { f: e4, d: 0.6 }, { f: d4, d: 1.4, b: d3 },
+      { f: N.D4, d: 0.5, b: N.D3 }, { f: N.FS4, d: 0.5 }, { f: N.A4, d: 0.5 }, { f: N.D5, d: 0.7, b: N.A2 },
+      { f: N.CS5, d: 0.5 }, { f: N.B4, d: 0.5 }, { f: N.A4, d: 0.6, b: N.G3 }, { f: N.FS4, d: 0.5 },
+      { f: N.G4, d: 0.5 }, { f: N.A4, d: 0.6 }, { f: N.G4, d: 0.5 }, { f: N.FS4, d: 0.5, b: N.B2 },
+      { f: N.E4, d: 0.6 }, { f: N.D4, d: 1.4, b: N.D3 },
 
       // ── SECTION B: Soaring Synth Swell ──
-      { f: fS4, d: 0.5, b: b2 }, { f: a4, d: 0.5 }, { f: d5, d: 0.6 }, { f: e5, d: 0.6, b: g3 },
-      { f: fS5, d: 0.8 }, { f: e5, d: 0.5 }, { f: d5, d: 0.6, b: d3 }, { f: b4, d: 0.5 },
-      { f: a4, d: 0.5 }, { f: b4, d: 0.6, b: a2 }, { f: d5, d: 0.6 }, { f: b4, d: 0.5 },
-      { f: a4, d: 0.6 }, { f: fS4, d: 0.5 }, { f: e4, d: 1.2, b: g3 },
+      { f: N.FS4, d: 0.5, b: N.B2 }, { f: N.A4, d: 0.5 }, { f: N.D5, d: 0.6 }, { f: N.E5, d: 0.6, b: N.G3 },
+      { f: N.FS5, d: 0.8 }, { f: N.E5, d: 0.5 }, { f: N.D5, d: 0.6, b: N.D3 }, { f: N.B4, d: 0.5 },
+      { f: N.A4, d: 0.5 }, { f: N.B4, d: 0.6, b: N.A2 }, { f: N.D5, d: 0.6 }, { f: N.B4, d: 0.5 },
+      { f: N.A4, d: 0.6 }, { f: N.FS4, d: 0.5 }, { f: N.E4, d: 1.2, b: N.G3 },
 
       // ── SECTION B2: Grand Climax ──
-      { f: fS4, d: 0.5, b: g3 }, { f: a4, d: 0.5 }, { f: d5, d: 0.6 }, { f: e5, d: 0.6, b: a2 },
-      { f: fS5, d: 0.7 }, { f: g5, d: 0.6 }, { f: fS5, d: 0.6, b: d3 }, { f: e5, d: 0.5 },
-      { f: d5, d: 0.6 }, { f: b4, d: 0.5, b: b2 }, { f: a4, d: 0.6 }, { f: fS4, d: 0.5 },
-      { f: e4, d: 0.6 }, { f: d4, d: 1.6, b: d3 },
+      { f: N.FS4, d: 0.5, b: N.G3 }, { f: N.A4, d: 0.5 }, { f: N.D5, d: 0.6 }, { f: N.E5, d: 0.6, b: N.A2 },
+      { f: N.FS5, d: 0.7 }, { f: N.G5, d: 0.6 }, { f: N.FS5, d: 0.6, b: N.D3 }, { f: N.E5, d: 0.5 },
+      { f: N.D5, d: 0.6 }, { f: N.B4, d: 0.5, b: N.B2 }, { f: N.A4, d: 0.6 }, { f: N.FS4, d: 0.5 },
+      { f: N.E4, d: 0.6 }, { f: N.D4, d: 1.6, b: N.D3 },
 
       // ── SECTION C: Reflective Piano Outro ──
-      { f: a4, d: 0.6, b: d3 }, { f: fS4, d: 0.5 }, { f: d4, d: 0.5 }, { f: e4, d: 0.6, b: g3 },
-      { f: fS4, d: 0.6 }, { f: d4, d: 0.5 }, { f: b3, d: 0.6, b: b2 }, { f: a3, d: 0.5 },
-      { f: d4, d: 2.2, b: d3, chord: [fS3, a3, d4] }
+      { f: N.A4, d: 0.6, b: N.D3 }, { f: N.FS4, d: 0.5 }, { f: N.D4, d: 0.5 }, { f: N.E4, d: 0.6, b: N.G3 },
+      { f: N.FS4, d: 0.6 }, { f: N.D4, d: 0.5 }, { f: N.B3, d: 0.6, b: N.B2 }, { f: N.A3, d: 0.5 },
+      { f: N.D4, d: 2.2, b: N.D3, chord: [N.FS3, N.A3, N.D4] }
     ];
 
     this.playSongSequence(fullSong, 'miceonvenus', loopSelf);
   }
 
-  // ── 5. C418 - "CAT" (FULL COMPLETE MUSIC DISC SONG) ───────────────────────────
+  // ── 5. C418 - "CAT" (FULL COMPLETE 5-PART MUSIC DISC ARRANGEMENT) ────────────
   public playCatDiscFull(loopSelf = true): void {
-    const c5 = 523.25, g4 = 392.00, d5 = 587.33, e5 = 659.25, a4 = 440.00, e4 = 329.63, c4 = 261.63, g5 = 783.99, f5 = 698.46;
-    const a3 = 220.00, f3 = 174.61, g3 = 196.00, c3 = 130.81, e3 = 164.81;
-
     const fullSong: SongNote[] = [
       // ── SECTION A: The Iconic Opening Jukebox Groove ──
-      { f: c5, d: 0.25, b: c3 }, { f: g4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 },
-      { f: e5, d: 0.4, b: a3 }, { f: d5, d: 0.25 }, { f: c5, d: 0.35 }, { f: a4, d: 0.25 },
-      { f: g4, d: 0.3, b: f3 }, { f: e4, d: 0.25 }, { f: g4, d: 0.25 }, { f: a4, d: 0.35 },
-      { f: c5, d: 0.35, b: g3 }, { f: a4, d: 0.25 }, { f: g4, d: 0.5 },
+      { f: N.C5, d: 0.25, b: N.C3 }, { f: N.G4, d: 0.25 }, { f: N.C5, d: 0.25 }, { f: N.D5, d: 0.25 },
+      { f: N.E5, d: 0.4, b: N.A3 },  { f: N.D5, d: 0.25 }, { f: N.C5, d: 0.35 }, { f: N.A4, d: 0.25 },
+      { f: N.G4, d: 0.3, b: N.F3 },  { f: N.E4, d: 0.25 }, { f: N.G4, d: 0.25 }, { f: N.A4, d: 0.35 },
+      { f: N.C5, d: 0.35, b: N.G3 }, { f: N.A4, d: 0.25 }, { f: N.G4, d: 0.5 },
 
       // ── SECTION A2: Groove Variation with High G5 ──
-      { f: c5, d: 0.25, b: c3 }, { f: g4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 },
-      { f: e5, d: 0.35, b: a3 }, { f: g5, d: 0.3 }, { f: e5, d: 0.3 }, { f: d5, d: 0.25 },
-      { f: c5, d: 0.35, b: f3 }, { f: a4, d: 0.25 }, { f: c5, d: 0.25 }, { f: d5, d: 0.3 },
-      { f: c5, d: 0.6, b: c3 },
+      { f: N.C5, d: 0.25, b: N.C3 }, { f: N.G4, d: 0.25 }, { f: N.C5, d: 0.25 }, { f: N.D5, d: 0.25 },
+      { f: N.E5, d: 0.35, b: N.A3 }, { f: N.G5, d: 0.3 },  { f: N.E5, d: 0.3 },  { f: N.D5, d: 0.25 },
+      { f: N.C5, d: 0.35, b: N.F3 }, { f: N.A4, d: 0.25 }, { f: N.C5, d: 0.25 }, { f: N.D5, d: 0.3 },
+      { f: N.C5, d: 0.6, b: N.C3 },
 
       // ── SECTION B: The Funky Bridge / 16-Bit Jam ──
-      { f: e5, d: 0.3, b: e3 }, { f: e5, d: 0.25 }, { f: d5, d: 0.25 }, { f: c5, d: 0.25 },
-      { f: d5, d: 0.3, b: a3 }, { f: e5, d: 0.35 }, { f: g4, d: 0.25 }, { f: a4, d: 0.25 },
-      { f: c5, d: 0.3, b: f3 }, { f: d5, d: 0.25 }, { f: e5, d: 0.35 }, { f: d5, d: 0.25 },
-      { f: c5, d: 0.3, b: g3 }, { f: a4, d: 0.25 }, { f: g4, d: 0.45 },
+      { f: N.E5, d: 0.3, b: N.E3 },  { f: N.E5, d: 0.25 }, { f: N.D5, d: 0.25 }, { f: N.C5, d: 0.25 },
+      { f: N.D5, d: 0.3, b: N.A3 },  { f: N.E5, d: 0.35 }, { f: N.G4, d: 0.25 }, { f: N.A4, d: 0.25 },
+      { f: N.C5, d: 0.3, b: N.F3 },  { f: N.D5, d: 0.25 }, { f: N.E5, d: 0.35 }, { f: N.D5, d: 0.25 },
+      { f: N.C5, d: 0.3, b: N.G3 },  { f: N.A4, d: 0.25 }, { f: N.G4, d: 0.45 },
 
       // ── SECTION B2: Bridge Climax with High F5 ──
-      { f: a4, d: 0.25, b: f3 }, { f: c5, d: 0.25 }, { f: d5, d: 0.25 }, { f: e5, d: 0.3 },
-      { f: f5, d: 0.35, b: g3 }, { f: e5, d: 0.25 }, { f: d5, d: 0.25 }, { f: c5, d: 0.25 },
-      { f: d5, d: 0.3, b: c3 }, { f: e5, d: 0.3 }, { f: c5, d: 0.3, b: a3 }, { f: a4, d: 0.25 },
-      { f: g4, d: 0.3, b: g3 }, { f: c5, d: 0.7, b: c3 },
+      { f: N.A4, d: 0.25, b: N.F3 }, { f: N.C5, d: 0.25 }, { f: N.D5, d: 0.25 }, { f: N.E5, d: 0.3 },
+      { f: N.F5, d: 0.35, b: N.G3 }, { f: N.E5, d: 0.25 }, { f: N.D5, d: 0.25 }, { f: N.C5, d: 0.25 },
+      { f: N.D5, d: 0.3, b: N.C3 },  { f: N.E5, d: 0.3 },  { f: N.C5, d: 0.3, b: N.A3 }, { f: N.A4, d: 0.25 },
+      { f: N.G4, d: 0.3, b: N.G3 },  { f: N.C5, d: 0.7, b: N.C3 },
 
       // ── SECTION C: Outro Groove Flourish ──
-      { f: c5, d: 0.25, b: c3 }, { f: e5, d: 0.25 }, { f: g5, d: 0.3 }, { f: e5, d: 0.25 },
-      { f: c5, d: 0.25, b: g3 }, { f: g4, d: 0.25 }, { f: e4, d: 0.3 }, { f: c4, d: 0.9, b: c3 }
+      { f: N.C5, d: 0.25, b: N.C3 }, { f: N.E5, d: 0.25 }, { f: N.G5, d: 0.3 },  { f: N.E5, d: 0.25 },
+      { f: N.C5, d: 0.25, b: N.G3 }, { f: N.G4, d: 0.25 }, { f: N.E4, d: 0.3 },  { f: N.C4, d: 0.9, b: N.C3 }
     ];
 
     this.playSongSequence(fullSong, 'cat', loopSelf);
@@ -641,40 +634,38 @@ export class SoundSynthesizer {
 
   // ── 6. THE WELLERMAN (FULL 3-VERSE & CHORUS SEA SHANTY) ───────────────────────
   public playWellermanFull(): void {
-    const c4 = 261.63, eb4 = 311.13, g4 = 392.00, f4 = 349.23, d4 = 293.66, ab4 = 415.30, bb3 = 233.08, c3 = 130.81, g3 = 196.00, ab3 = 207.65, eb3 = 155.56;
-
     const fullSong: SongNote[] = [
       // ── VERSE 1: "There once was a ship that put to sea..." ──
-      { f: c4,  d: 0.3, b: c3 }, { f: c4,  d: 0.3 }, { f: c4,  d: 0.3 }, { f: eb4, d: 0.4 },
-      { f: g4,  d: 0.4, b: g3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.4 },
-      { f: f4,  d: 0.3, b: bb3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: d4,  d: 0.3 },
-      { f: d4,  d: 0.3 }, { f: f4,  d: 0.4, b: c3 }, { f: g4,  d: 0.4 }, { f: ab4, d: 0.4 },
-      { f: g4,  d: 0.3, b: g3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 },
-      { f: c4,  d: 0.6, b: c3 },
+      { f: N.C4,  d: 0.3, b: N.C3 }, { f: N.C4,  d: 0.3 }, { f: N.C4,  d: 0.3 }, { f: N.EB4, d: 0.4 },
+      { f: N.G4,  d: 0.4, b: N.G3 }, { f: N.G4,  d: 0.3 }, { f: N.G4,  d: 0.3 }, { f: N.G4,  d: 0.4 },
+      { f: N.F4,  d: 0.3, b: N.BB3 }, { f: N.EB4, d: 0.3 }, { f: N.D4,  d: 0.3 }, { f: N.D4,  d: 0.3 },
+      { f: N.D4,  d: 0.3 },          { f: N.F4,  d: 0.4, b: N.C3 }, { f: N.G4,  d: 0.4 }, { f: N.AB4, d: 0.4 },
+      { f: N.G4,  d: 0.3, b: N.G3 }, { f: N.F4,  d: 0.3 }, { f: N.EB4, d: 0.3 }, { f: N.D4,  d: 0.3 },
+      { f: N.C4,  d: 0.6, b: N.C3 },
 
       // ── CHORUS 1: "Soon may the Wellerman come..." ──
-      { f: ab4, d: 0.35, b: ab3 }, { f: g4,  d: 0.3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.35, b: eb3 },
-      { f: d4,  d: 0.3 }, { f: c4,  d: 0.35, b: c3 }, { f: g3,  d: 0.3 }, { f: g3,  d: 0.3 },
-      { f: c4,  d: 0.35, b: c3 }, { f: eb4, d: 0.3 }, { f: g4,  d: 0.4, b: g3 }, { f: f4,  d: 0.3 },
-      { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: c4,  d: 0.6, b: c3 },
+      { f: N.AB4, d: 0.35, b: N.AB3 }, { f: N.G4,  d: 0.3 }, { f: N.F4,  d: 0.3 }, { f: N.EB4, d: 0.35, b: N.EB3 },
+      { f: N.D4,  d: 0.3 },           { f: N.C4,  d: 0.35, b: N.C3 }, { f: N.G3,  d: 0.3 }, { f: N.G3,  d: 0.3 },
+      { f: N.C4,  d: 0.35, b: N.C3 }, { f: N.EB4, d: 0.3 }, { f: N.G4,  d: 0.4, b: N.G3 }, { f: N.F4,  d: 0.3 },
+      { f: N.EB4, d: 0.3 },           { f: N.D4,  d: 0.3 }, { f: N.C4,  d: 0.6, b: N.C3 },
 
       // ── VERSE 2: "She'd not been two weeks from down..." ──
-      { f: c4,  d: 0.3, b: c3 }, { f: c4,  d: 0.3 }, { f: c4,  d: 0.3 }, { f: eb4, d: 0.4 },
-      { f: g4,  d: 0.4, b: g3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.3 }, { f: g4,  d: 0.4 },
-      { f: f4,  d: 0.3, b: bb3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: d4,  d: 0.3 },
-      { f: d4,  d: 0.3 }, { f: f4,  d: 0.4, b: c3 }, { f: g4,  d: 0.4 }, { f: ab4, d: 0.4 },
-      { f: g4,  d: 0.3, b: g3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 },
-      { f: c4,  d: 0.6, b: c3 },
+      { f: N.C4,  d: 0.3, b: N.C3 }, { f: N.C4,  d: 0.3 }, { f: N.C4,  d: 0.3 }, { f: N.EB4, d: 0.4 },
+      { f: N.G4,  d: 0.4, b: N.G3 }, { f: N.G4,  d: 0.3 }, { f: N.G4,  d: 0.3 }, { f: N.G4,  d: 0.4 },
+      { f: N.F4,  d: 0.3, b: N.BB3 }, { f: N.EB4, d: 0.3 }, { f: N.D4,  d: 0.3 }, { f: N.D4,  d: 0.3 },
+      { f: N.D4,  d: 0.3 },          { f: N.F4,  d: 0.4, b: N.C3 }, { f: N.G4,  d: 0.4 }, { f: N.AB4, d: 0.4 },
+      { f: N.G4,  d: 0.3, b: N.G3 }, { f: N.F4,  d: 0.3 }, { f: N.EB4, d: 0.3 }, { f: N.D4,  d: 0.3 },
+      { f: N.C4,  d: 0.6, b: N.C3 },
 
       // ── CHORUS 2: Full Swelling Shanty Chorus ──
-      { f: ab4, d: 0.35, b: ab3 }, { f: g4,  d: 0.3 }, { f: f4,  d: 0.3 }, { f: eb4, d: 0.35, b: eb3 },
-      { f: d4,  d: 0.3 }, { f: c4,  d: 0.35, b: c3 }, { f: g3,  d: 0.3 }, { f: g3,  d: 0.3 },
-      { f: c4,  d: 0.35, b: c3 }, { f: eb4, d: 0.3 }, { f: g4,  d: 0.4, b: g3 }, { f: f4,  d: 0.3 },
-      { f: eb4, d: 0.3 }, { f: d4,  d: 0.3 }, { f: c4,  d: 0.6, b: c3 },
+      { f: N.AB4, d: 0.35, b: N.AB3 }, { f: N.G4,  d: 0.3 }, { f: N.F4,  d: 0.3 }, { f: N.EB4, d: 0.35, b: N.EB3 },
+      { f: N.D4,  d: 0.3 },           { f: N.C4,  d: 0.35, b: N.C3 }, { f: N.G3,  d: 0.3 }, { f: N.G3,  d: 0.3 },
+      { f: N.C4,  d: 0.35, b: N.C3 }, { f: N.EB4, d: 0.3 }, { f: N.G4,  d: 0.4, b: N.G3 }, { f: N.F4,  d: 0.3 },
+      { f: N.EB4, d: 0.3 },           { f: N.D4,  d: 0.3 }, { f: N.C4,  d: 0.6, b: N.C3 },
 
       // ── OUTRO: Shanty Hornpipe Finish ──
-      { f: g3,  d: 0.25, b: c3 }, { f: c4,  d: 0.25 }, { f: eb4, d: 0.25 }, { f: g4,  d: 0.3 },
-      { f: c5,  d: 0.4, b: c3 },  { f: g4,  d: 0.25 }, { f: eb4, d: 0.25 }, { f: c4,  d: 0.8, b: c3 }
+      { f: N.G3,  d: 0.25, b: N.C3 }, { f: N.C4,  d: 0.25 }, { f: N.EB4, d: 0.25 }, { f: N.G4,  d: 0.3 },
+      { f: N.C5,  d: 0.4, b: N.C3 },  { f: N.G4,  d: 0.25 }, { f: N.EB4, d: 0.25 }, { f: N.C4,  d: 0.8, b: N.C3 }
     ];
 
     this.playSongSequence(fullSong, 'wellerman', true);
@@ -682,37 +673,34 @@ export class SoundSynthesizer {
 
   // ── 7. KEVIN MACLEOD - "SNEAKY SNITCH" (FULL EXTENDED ARRANGEMENT) ────────────
   public playSneakySnitchFull(): void {
-    const c4 = 261.63, d4 = 293.66, eb4 = 311.13, g3 = 196.00, b3 = 246.94, f4 = 349.23, g4 = 392.00, ab4 = 415.30, c5 = 523.25, b4 = 493.88;
-    const c3 = 130.81, g2 = 98.00, b2 = 123.47, ab3 = 207.65;
-
     const fullSong: SongNote[] = [
       // ── INTRO: Stealth Tiptoe Bass ──
-      { f: g3, d: 0.2, b: c3 }, { f: c4, d: 0.2 }, { f: g3, d: 0.2 }, { f: c4, d: 0.2 },
-      { f: b3, d: 0.2, b: g2 }, { f: d4, d: 0.2 }, { f: b3, d: 0.2 }, { f: d4, d: 0.2 },
+      { f: N.G3, d: 0.2, b: N.C3 }, { f: N.C4, d: 0.2 }, { f: N.G3, d: 0.2 }, { f: N.C4, d: 0.2 },
+      { f: N.B3, d: 0.2, b: N.G2 }, { f: N.D4, d: 0.2 }, { f: N.B3, d: 0.2 }, { f: N.D4, d: 0.2 },
 
       // ── SECTION A: Main Mischief Theme ──
-      { f: c4, d: 0.2, b: c3 }, { f: d4, d: 0.2 }, { f: eb4, d: 0.3, b: c3 }, { f: c4, d: 0.2 },
-      { f: g3, d: 0.2 }, { f: c4, d: 0.2 }, { f: eb4, d: 0.3, b: c3 }, { f: d4, d: 0.2 },
-      { f: b3, d: 0.2, b: g2 }, { f: g3, d: 0.2 }, { f: b3, d: 0.2, b: b2 }, { f: d4, d: 0.3 },
-      { f: c4, d: 0.2 }, { f: g3, d: 0.2 }, { f: c4, d: 0.2, b: c3 }, { f: eb4, d: 0.2 },
-      { f: f4, d: 0.2 }, { f: g4, d: 0.3, b: g3 }, { f: ab4, d: 0.2 }, { f: g4, d: 0.2 },
-      { f: f4, d: 0.2 }, { f: eb4, d: 0.2 }, { f: d4, d: 0.2 }, { f: c4, d: 0.5, b: c3 },
+      { f: N.C4, d: 0.2, b: N.C3 }, { f: N.D4, d: 0.2 }, { f: N.EB4, d: 0.3, b: N.C3 }, { f: N.C4, d: 0.2 },
+      { f: N.G3, d: 0.2 },          { f: N.C4, d: 0.2 }, { f: N.EB4, d: 0.3, b: N.C3 }, { f: N.D4, d: 0.2 },
+      { f: N.B3, d: 0.2, b: N.G2 }, { f: N.G3, d: 0.2 }, { f: N.B3, d: 0.2, b: N.B2 },  { f: N.D4, d: 0.3 },
+      { f: N.C4, d: 0.2 },          { f: N.G3, d: 0.2 }, { f: N.C4, d: 0.2, b: N.C3 }, { f: N.EB4, d: 0.2 },
+      { f: N.F4, d: 0.2 },          { f: N.G4, d: 0.3, b: N.G3 }, { f: N.AB4, d: 0.2 }, { f: N.G4, d: 0.2 },
+      { f: N.F4, d: 0.2 },          { f: N.EB4, d: 0.2 }, { f: N.D4, d: 0.2 }, { f: N.C4, d: 0.5, b: N.C3 },
 
       // ── SECTION B: Tension Escalation & Chromatic Staccato ──
-      { f: g4, d: 0.25, b: g3 }, { f: g4, d: 0.2 }, { f: f4, d: 0.2 }, { f: eb4, d: 0.2 },
-      { f: f4, d: 0.25, b: c3 }, { f: g4, d: 0.3 }, { f: c4, d: 0.2 }, { f: d4, d: 0.2 },
-      { f: eb4, d: 0.25, b: c3 }, { f: d4, d: 0.2 }, { f: c4, d: 0.2 }, { f: b3, d: 0.3, b: g2 },
-      { f: g3, d: 0.2 }, { f: ab3, d: 0.2 }, { f: a3, d: 0.2 }, { f: b3, d: 0.3, b: b2 },
-      { f: c4, d: 0.2, b: c3 }, { f: d4, d: 0.2 }, { f: eb4, d: 0.2 }, { f: f4, d: 0.2 },
-      { f: g4, d: 0.3, b: g3 }, { f: ab4, d: 0.2 }, { f: g4, d: 0.2 }, { f: f4, d: 0.2 },
-      { f: eb4, d: 0.2 }, { f: d4, d: 0.2 }, { f: c4, d: 0.6, b: c3 },
+      { f: N.G4, d: 0.25, b: N.G3 }, { f: N.G4, d: 0.2 }, { f: N.F4, d: 0.2 }, { f: N.EB4, d: 0.2 },
+      { f: N.F4, d: 0.25, b: N.C3 }, { f: N.G4, d: 0.3 }, { f: N.C4, d: 0.2 }, { f: N.D4, d: 0.2 },
+      { f: N.EB4, d: 0.25, b: N.C3 }, { f: N.D4, d: 0.2 }, { f: N.C4, d: 0.2 }, { f: N.B3, d: 0.3, b: N.G2 },
+      { f: N.G3, d: 0.2 },           { f: N.AB3, d: 0.2 }, { f: N.A3, d: 0.2 }, { f: N.B3, d: 0.3, b: N.B2 },
+      { f: N.C4, d: 0.2, b: N.C3 },  { f: N.D4, d: 0.2 }, { f: N.EB4, d: 0.2 }, { f: N.F4, d: 0.2 },
+      { f: N.G4, d: 0.3, b: N.G3 },  { f: N.AB4, d: 0.2 }, { f: N.G4, d: 0.2 }, { f: N.F4, d: 0.2 },
+      { f: N.EB4, d: 0.2 },          { f: N.D4, d: 0.2 }, { f: N.C4, d: 0.6, b: N.C3 },
 
       // ── SECTION C: High Comic Climax & Tiptoe Resolve ──
-      { f: c5, d: 0.25, b: c3 }, { f: b4, d: 0.2 }, { f: c5, d: 0.25 }, { f: ab4, d: 0.2, b: ab3 },
-      { f: g4, d: 0.2 }, { f: f4, d: 0.2 }, { f: eb4, d: 0.2, b: c3 }, { f: d4, d: 0.2 },
-      { f: c4, d: 0.2 }, { f: b3, d: 0.2, b: g2 }, { f: c4, d: 0.2 }, { f: d4, d: 0.2 },
-      { f: eb4, d: 0.25, b: c3 }, { f: d4, d: 0.2 }, { f: c4, d: 0.2 }, { f: g3, d: 0.2 },
-      { f: c4, d: 0.8, b: c3 }
+      { f: N.C5, d: 0.25, b: N.C3 }, { f: N.B4, d: 0.2 }, { f: N.C5, d: 0.25 }, { f: N.AB4, d: 0.2, b: N.AB3 },
+      { f: N.G4, d: 0.2 },           { f: N.F4, d: 0.2 }, { f: N.EB4, d: 0.2, b: N.C3 }, { f: N.D4, d: 0.2 },
+      { f: N.C4, d: 0.2 },           { f: N.B3, d: 0.2, b: N.G2 }, { f: N.C4, d: 0.2 },  { f: N.D4, d: 0.2 },
+      { f: N.EB4, d: 0.25, b: N.C3 }, { f: N.D4, d: 0.2 }, { f: N.C4, d: 0.2 }, { f: N.G3, d: 0.2 },
+      { f: N.C4, d: 0.8, b: N.C3 }
     ];
 
     this.playSongSequence(fullSong, 'sneakysnitch', true);
@@ -720,39 +708,36 @@ export class SoundSynthesizer {
 
   // ── 8. BEETHOVEN - "ODE TO JOY" (FULL COMPLETE 4-PART SYMPHONY MOVEMENT) ──────
   public playOdeToJoyFull(): void {
-    const e4 = 329.63, f4 = 349.23, g4 = 392.00, d4 = 293.66, c4 = 261.63, g3 = 196.00, a4 = 440.00;
-    const c3 = 130.81, g2 = 98.00, a3 = 220.00, f3 = 174.61;
-
     const fullSong: SongNote[] = [
       // ── PART 1: Main Statement ──
-      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
-      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
-      { f: e4, d: 0.5 },  { f: d4, d: 0.2 },  { f: d4, d: 0.6, b: g3, chord: [b3, d4] },
+      { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.E4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.G4, d: 0.35, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.G4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.D4, d: 0.35 },
+      { f: N.C4, d: 0.35, b: N.C3 }, { f: N.C4, d: 0.35 }, { f: N.D4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.G3 },
+      { f: N.E4, d: 0.5 },  { f: N.D4, d: 0.2 },  { f: N.D4, d: 0.6, b: N.G3, chord: [N.B3, N.D4] },
 
       // ── PART 2: Statement Reprise with Resolution ──
-      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
-      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
-      { f: d4, d: 0.5 },  { f: c4, d: 0.2 },  { f: c4, d: 0.7, b: c3, chord: [e4, g4] },
+      { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.E4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.G4, d: 0.35, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.G4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.D4, d: 0.35 },
+      { f: N.C4, d: 0.35, b: N.C3 }, { f: N.C4, d: 0.35 }, { f: N.D4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.G3 },
+      { f: N.D4, d: 0.5 },  { f: N.C4, d: 0.2 },  { f: N.C4, d: 0.7, b: N.C3, chord: [N.E4, N.G4] },
 
       // ── PART 3: Middle Development & Bridge ──
-      { f: d4, d: 0.35, b: g3 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: c3 }, { f: c4, d: 0.35 },
-      { f: d4, d: 0.35, b: g3 }, { f: e4, d: 0.2 },  { f: f4, d: 0.2 }, { f: e4, d: 0.35, b: c3 }, { f: c4, d: 0.35 },
-      { f: d4, d: 0.35, b: g3 }, { f: e4, d: 0.2 },  { f: f4, d: 0.2 }, { f: e4, d: 0.35, b: c3 }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: f3 }, { f: d4, d: 0.35 }, { f: g3, d: 0.7, b: g2, chord: [d4, f4] },
+      { f: N.D4, d: 0.35, b: N.G3 }, { f: N.D4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3 }, { f: N.C4, d: 0.35 },
+      { f: N.D4, d: 0.35, b: N.G3 }, { f: N.E4, d: 0.2 },  { f: N.F4, d: 0.2 }, { f: N.E4, d: 0.35, b: N.C3 }, { f: N.C4, d: 0.35 },
+      { f: N.D4, d: 0.35, b: N.G3 }, { f: N.E4, d: 0.2 },  { f: N.F4, d: 0.2 }, { f: N.E4, d: 0.35, b: N.C3 }, { f: N.D4, d: 0.35 },
+      { f: N.C4, d: 0.35, b: N.F3 }, { f: N.D4, d: 0.35 }, { f: N.G3, d: 0.7, b: N.G2, chord: [N.D4, N.F4] },
 
       // ── PART 4: Grand Symphonic Reprise & Coda ──
-      { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3, chord: [b3, d4] },
-      { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3, chord: [g3, c4] }, { f: d4, d: 0.35 },
-      { f: c4, d: 0.35, b: c3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: g3 },
-      { f: d4, d: 0.5 },  { f: c4, d: 0.2 },  { f: c4, d: 0.7, b: c3 },
+      { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.E4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.G4, d: 0.35, b: N.G3, chord: [N.B3, N.D4] },
+      { f: N.G4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3, chord: [N.G3, N.C4] }, { f: N.D4, d: 0.35 },
+      { f: N.C4, d: 0.35, b: N.C3 }, { f: N.C4, d: 0.35 }, { f: N.D4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.G3 },
+      { f: N.D4, d: 0.5 },  { f: N.C4, d: 0.2 },  { f: N.C4, d: 0.7, b: N.C3 },
 
       // Grand Coda Fanfare
-      { f: g4, d: 0.35, b: c3 }, { f: e4, d: 0.35 }, { f: f4, d: 0.35 }, { f: g4, d: 0.35, b: g3 },
-      { f: a4, d: 0.35, b: f3 }, { f: g4, d: 0.35 }, { f: f4, d: 0.35 }, { f: e4, d: 0.35, b: c3 },
-      { f: d4, d: 0.35, b: g3 }, { f: c4, d: 0.35 }, { f: d4, d: 0.35 }, { f: e4, d: 0.35, b: c3 },
-      { f: d4, d: 0.5, b: g3 },  { f: c4, d: 0.2 },  { f: c4, d: 1.8, b: c3, chord: [e4, g4, c5] }
+      { f: N.G4, d: 0.35, b: N.C3 }, { f: N.E4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.G4, d: 0.35, b: N.G3 },
+      { f: N.A4, d: 0.35, b: N.F3 }, { f: N.G4, d: 0.35 }, { f: N.F4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3 },
+      { f: N.D4, d: 0.35, b: N.G3 }, { f: N.C4, d: 0.35 }, { f: N.D4, d: 0.35 }, { f: N.E4, d: 0.35, b: N.C3 },
+      { f: N.D4, d: 0.5, b: N.G3 },  { f: N.C4, d: 0.2 },  { f: N.C4, d: 1.8, b: N.C3, chord: [N.E4, N.G4, N.C5] }
     ];
 
     this.playSongSequence(fullSong, 'odetojoy', true);
@@ -805,8 +790,8 @@ export class SoundSynthesizer {
 
   // ── 9. CYBERSPACE (EXTENDED PROCEDURAL ARPEGGIOS) ───────────────────────────
   private playCyberspaceLoop(): void {
-    const scale = [220.00, 261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 659.25, 783.99];
-    const bass = [110.00, 110.00, 130.81, 146.83, 164.81, 164.81, 146.83, 130.81, 98.00, 110.00];
+    const scale = [N.A3, N.C4, N.D4, N.E4, N.G4, N.A4, N.C5, N.E5, N.G5];
+    const bass = [N.A2, N.A2, N.C3, N.D3, N.E3, N.E3, N.D3, N.C3, N.G2, N.A2];
     const pattern = [
       0, 2, 4, 7, 5, 3, 4, 1, 0, 3, 5, 7, 6, 4, 2, 1,
       2, 4, 6, 8, 7, 5, 3, 1, 0, 4, 7, 5, 3, 2, 1, 0
@@ -831,13 +816,13 @@ export class SoundSynthesizer {
   // ── 10. NEON (EXTENDED 16-BIT LO-FI JAZZ CHORD PROGRESSIONS) ────────────────
   private playNeonLoop(): void {
     const progressions = [
-      [146.83, 220.00, 261.63, 329.63, 392.00], // Dm9
-      [196.00, 246.94, 293.66, 349.23, 440.00], // G13
-      [130.81, 196.00, 246.94, 329.63, 392.00], // Cmaj9
-      [220.00, 261.63, 329.63, 392.00, 523.25], // Am7
-      [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj7#11
-      [164.81, 207.65, 246.94, 329.63, 392.00], // E7b9
-      [220.00, 261.63, 329.63, 392.00, 493.88]  // Am9
+      [N.D3, N.A3, N.C4, N.E4, N.G4], // Dm9
+      [N.G3, N.B3, N.D4, N.F4, N.A4], // G13
+      [N.C3, N.G3, N.B3, N.E4, N.G4], // Cmaj9
+      [N.A3, N.C4, N.E4, N.G4, N.C5], // Am7
+      [N.F3, N.A3, N.C4, N.E4, N.G4], // Fmaj7#11
+      [N.E3, N.GS3, N.B3, N.E4, N.G4], // E7b9
+      [N.A3, N.C4, N.E4, N.G4, N.B4]  // Am9
     ];
     let chordIdx = 0;
     let tickCount = 0;
@@ -864,8 +849,8 @@ export class SoundSynthesizer {
 
   // ── 11. DEEP TERMINAL AMBIENT ───────────────────────────────────────────────
   private playAmbientLoop(): void {
-    const droneFreqs = [110.00, 146.83, 164.81, 220.00, 293.66, 329.63];
-    const chimeScale = [523.25, 659.25, 783.99, 880.00, 987.77, 1046.50, 1318.51, 1567.98];
+    const droneFreqs = [N.A2, N.D3, N.E3, N.A3, N.D4, N.E4];
+    const chimeScale = [N.C5, N.E5, N.G5, N.A5, N.B5, N.C6, N.E5, N.G5];
 
     const droneTick = () => {
       if (!this.enabled || this.currentTrack !== 'ambient') return;
@@ -887,7 +872,7 @@ export class SoundSynthesizer {
 
   // ── 12. GENERATIVE ENDLESS RETRO MODE ───────────────────────────────────────
   private playGenerativeLoop(): void {
-    const rootNotes = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00];
+    const rootNotes = [N.C3, N.D3, N.E3, N.F3, N.G3, N.A3];
     let baseRoot = rootNotes[Math.floor(Math.random() * rootNotes.length)];
     let interval = 0;
 
@@ -926,34 +911,31 @@ export class SoundSynthesizer {
   }
 
   public playZeldaTheme(): void {
-    const g4 = 392.00, fs4 = 369.99, ds4 = 311.13, a3 = 220.00, gs3 = 207.65, e4 = 329.63, cs4 = 277.18, c5 = 523.25;
     const notes = [
-      { freq: g4, dur: 0.12 }, { freq: fs4, dur: 0.12 }, { freq: ds4, dur: 0.12 },
-      { freq: a3, dur: 0.12 }, { freq: gs3, dur: 0.12 }, { freq: e4, dur: 0.12 },
-      { freq: cs4, dur: 0.12 }, { freq: c5, dur: 0.35 }
+      { freq: N.G4, dur: 0.12 }, { freq: N.FS4, dur: 0.12 }, { freq: N.DS4, dur: 0.12 },
+      { freq: N.A3, dur: 0.12 }, { freq: N.GS3, dur: 0.12 }, { freq: N.E4, dur: 0.12 },
+      { freq: N.CS4, dur: 0.12 }, { freq: N.C5, dur: 0.35 }
     ];
     this.playMelody(notes);
   }
 
   public playPokemonTheme(): void {
-    const c4 = 261.63, d4 = 293.66, e4 = 329.63, g4 = 392.00, a4 = 440.00, b4 = 493.88, c5 = 523.25;
     const notes = [
-      { freq: c4, dur: 0.2 }, { freq: e4, dur: 0.2 }, { freq: g4, dur: 0.2 },
-      { freq: a4, dur: 0.4 }, { freq: g4, dur: 0.4 }, { freq: e4, dur: 0.2 },
-      { freq: d4, dur: 0.2 }, { freq: c4, dur: 0.4 }, { freq: d4, dur: 0.4 },
-      { freq: e4, dur: 0.6 }
+      { freq: N.C4, dur: 0.2 }, { freq: N.E4, dur: 0.2 }, { freq: N.G4, dur: 0.2 },
+      { freq: N.A4, dur: 0.4 }, { freq: N.G4, dur: 0.4 }, { freq: N.E4, dur: 0.2 },
+      { freq: N.D4, dur: 0.2 }, { freq: N.C4, dur: 0.4 }, { freq: N.D4, dur: 0.4 },
+      { freq: N.E4, dur: 0.6 }
     ];
     this.playMelody(notes);
   }
 
   public playTetrisTheme(): void {
-    const e5 = 659.25, b4 = 493.88, c5 = 523.25, d5 = 587.33, a4 = 440.00;
     const notes = [
-      { freq: e5, dur: 0.3 }, { freq: b4, dur: 0.15 }, { freq: c5, dur: 0.15 },
-      { freq: d5, dur: 0.3 }, { freq: c5, dur: 0.15 }, { freq: b4, dur: 0.15 },
-      { freq: a4, dur: 0.3 }, { freq: a4, dur: 0.15 }, { freq: c5, dur: 0.15 },
-      { freq: e5, dur: 0.3 }, { freq: d5, dur: 0.15 }, { freq: c5, dur: 0.15 },
-      { freq: b4, dur: 0.45 }
+      { freq: N.E5, dur: 0.3 }, { freq: N.B4, dur: 0.15 }, { freq: N.C5, dur: 0.15 },
+      { freq: N.D5, dur: 0.3 }, { freq: N.C5, dur: 0.15 }, { freq: N.B4, dur: 0.15 },
+      { freq: N.A4, dur: 0.3 }, { freq: N.A4, dur: 0.15 }, { freq: N.C5, dur: 0.15 },
+      { freq: N.E5, dur: 0.3 }, { freq: N.D5, dur: 0.15 }, { freq: N.C5, dur: 0.15 },
+      { freq: N.B4, dur: 0.45 }
     ];
     this.playMelody(notes);
   }
