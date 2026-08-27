@@ -11,6 +11,7 @@
     "build:client": "vite build",
     "build:server": "tsup src/server/index.ts --format esm --out-dir dist/server --clean",
     "build": "vite build && tsup src/server/index.ts --format esm --out-dir dist/server --clean",
+    "test": "tsx tests/audit.test.ts",
     "start": "NODE_ENV=production node dist/server/index.js"
   },
   "keywords": [

@@ -29,6 +29,7 @@ export interface DirectoryData {
   audio: boolean;
   showCategoryNumbers?: boolean;
   showEntryNumbers?: boolean;
+  customTags?: string[];
   categories: Category[];
   updatedAt: string;
 }
@@ -44,6 +45,13 @@ export const defaultDirectoryData: DirectoryData = {
   audio: true,
   showCategoryNumbers: true,
   showEntryNumbers: true,
+  customTags: [
+    "infra", "vm", "lxc", "backup", "storage", "network", 
+    "security", "dns", "adblock", "streaming", "movies", 
+    "tv", "opensource", "automation", "pvr", "git", 
+    "code", "cicd", "cloud", "docs", "docker", "containers", 
+    "monitoring", "telemetry"
+  ],
   updatedAt: new Date().toISOString(),
   categories: [
     {

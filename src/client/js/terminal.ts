@@ -45,7 +45,6 @@ export class TerminalManager {
     });
 
     this.inputEl.addEventListener('blur', () => {
-      // If there is active output open, keep typing mode or let escape handle it
       if (this.inputEl?.value === '' && (!this.outputContainerEl || this.outputContainerEl.classList.contains('collapsed'))) {
         document.body.classList.remove('terminal-typing-mode');
       }
@@ -304,7 +303,19 @@ export class TerminalManager {
         if (res.asyncRunner) {
           const signal = { stopped: false };
           this.activeAsyncSignal = signal;
-          await res.asyncRunner((txt, cls) => this.log(txt, cls || 'log-res'), signal);
+          const frameEl = document.createElement('div');
+          frameEl.className = 'log-res';
+          this.outputLogEl?.appendChild(frameEl);
+          const updateFrame = (txt: string, cls = 'log-res') => {
+            frameEl.className = cls;
+            frameEl.textContent = txt;
+            if (this.outputLogEl) this.outputLogEl.scrollTop = this.outputLogEl.scrollHeight;
+          };
+          await res.asyncRunner(
+            (txt, cls) => this.log(txt, cls || 'log-res'), 
+            signal, 
+            updateFrame
+          );
         }
       } catch (err: any) {
         this.log(`Command execution error: ${err.message}`, 'log-err');

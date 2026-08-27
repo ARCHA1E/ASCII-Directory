@@ -6,7 +6,11 @@ export interface CommandResult {
   isError?: boolean;
   isSuccess?: boolean;
   clear?: boolean;
-  asyncRunner?: (append: (txt: string, cls?: string) => void, stopSignal: { stopped: boolean }) => Promise<void>;
+  asyncRunner?: (
+    append: (txt: string, cls?: string) => void, 
+    signal: { stopped: boolean },
+    updateFrame?: (txt: string, cls?: string) => void
+  ) => Promise<void>;
 }
 
 export type CommandHandler = (args: string[], rawLine: string) => CommandResult | Promise<CommandResult>;
@@ -24,11 +28,11 @@ function createSpeechBubble(text: string, isThink = false): string {
   return `${top}\n${bubble}\n${bottom}\n${stem}`;
 }
 
-// 1. Star Wars ASCII Player
+// ── 1. Star Wars ASCII Player ────────────────────────────────────────────────
 commands['starwars'] = commands['telnet'] = () => {
   return {
     text: "Connecting to towel.blinkenlights.nl...",
-    asyncRunner: async (append, signal) => {
+    asyncRunner: async (append, signal, updateFrame) => {
       const frames = [
         `\n       A long time ago, in a galaxy far,\n            far away...`,
         `\n\n         ================================\n              STAR WARS: EPISODE IV\n                 A NEW HOPE\n         ================================`,
@@ -39,34 +43,38 @@ commands['starwars'] = commands['telnet'] = () => {
 
       for (const frame of frames) {
         if (signal.stopped) break;
-        append(frame);
+        if (updateFrame) {
+          updateFrame(frame, 'log-ok');
+        } else {
+          append(frame, 'log-ok');
+        }
         await new Promise(r => setTimeout(r, 1400));
       }
     }
   };
 };
 
-// 2. Matrix Digital Rain
+// ── 2. Matrix Digital Rain ───────────────────────────────────────────────────
 commands['matrix'] = commands['cmatrix'] = () => {
   return {
-    text: "[MATRIX STREAM INITIALIZED - PRESS ANY KEY OR ENTER TO STOP]",
-    asyncRunner: async (append, signal) => {
+    text: "[MATRIX STREAM INITIALIZED - PRESS ANY KEY TO STOP]",
+    asyncRunner: async (append, signal, updateFrame) => {
       const chars = "0123456789ABCDEFｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ";
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 40; i++) {
         if (signal.stopped) break;
         let line = "";
-        for (let j = 0; j < 60; j++) {
+        for (let j = 0; j < 55; j++) {
           line += Math.random() > 0.6 ? chars[Math.floor(Math.random() * chars.length)] : " ";
         }
         append(line, "log-ok");
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 80));
       }
       append("[MATRIX STREAM TERMINATED]");
     }
   };
 };
 
-// 3. Cowsay
+// ── 3. Cowsay ────────────────────────────────────────────────────────────────
 commands['cowsay'] = (args) => {
   const msg = args.join(' ') || 'Welcome to the ASCII directory!';
   const bubble = createSpeechBubble(msg, false);
@@ -79,7 +87,7 @@ commands['cowsay'] = (args) => {
   return { text: `${bubble}${cow}` };
 };
 
-// 4. Cowthink
+// ── 4. Cowthink ──────────────────────────────────────────────────────────────
 commands['cowthink'] = (args) => {
   const msg = args.join(' ') || 'I wonder what domain I should visit next...';
   const bubble = createSpeechBubble(msg, true);
@@ -92,112 +100,116 @@ commands['cowthink'] = (args) => {
   return { text: `${bubble}${cow}` };
 };
 
-// 5. SL (Steam Locomotive)
+// ── 5. SL (Steam Locomotive) ─────────────────────────────────────────────────
 commands['sl'] = () => {
   return {
     text: "[STEAM LOCOMOTIVE INCOMING]",
-    asyncRunner: async (append, signal) => {
+    asyncRunner: async (append, signal, updateFrame) => {
       const train = `
-      ====        ________                ___________ 
-  _D _|  |_______/        \\__I_I_____===__|_________| 
-   |(_)---  |   H\\________/ _____ |   | | |   ___   | 
-   /     |  |   H  |  |     |   | |   | | |  |   |  | 
-  |      |  |   H  |__--------------------|  |___|  | 
-  | ________|___H__/__|_____/[][]~\\_______|_________| 
-  |/ |   |_____/ \\_____/    \\_____/      \\_____/    \\ 
-__/  '-----------------------------------------------'
-    (O)       (O) (O)      (O) (O)        (O) (O)   `;
-      append(train, "log-ok");
-      sound.playBeep(220, 0.4, 'triangle');
-      await new Promise(r => setTimeout(r, 800));
-      sound.playBeep(440, 0.4, 'triangle');
+      ====        ________                ___________
+  _D _|  |_______/        \\__I_I_____===__|_________|
+   |(_)---  |   H\\________/ _____ |   (|) |       |
+   /     |  |   H  |  |   | |___| |     | |       |
+  |      |  |   H  |__--------------------|_______|
+  | ________|___H__/__|_____/[][]~\\_______|       |
+  |/ |   |_____I_____I_____/________\\_____|_______|
+   \\_/                  \\_/                  \\_/
+      `;
+      for (let i = 0; i < 8; i++) {
+        if (signal.stopped) break;
+        const offset = ' '.repeat(i * 4);
+        const frame = train.split('\n').map(l => offset + l).join('\n');
+        if (updateFrame) {
+          updateFrame(frame, 'log-ok');
+        } else {
+          append(frame, 'log-ok');
+        }
+        await new Promise(r => setTimeout(r, 200));
+      }
+      append("[CHOO CHOO! TRAIN DEPARTED]");
     }
   };
 };
 
-// 6. Pipes Screen Saver
+// ── 6. Pipes Screensaver ─────────────────────────────────────────────────────
 commands['pipes'] = () => {
   return {
-    text: "[PIPES GENERATOR RUNNING]",
+    text: "[RETRO PIPES ACTIVATED]",
     asyncRunner: async (append, signal) => {
-      const glyphs = ["╋", "┳", "┻", "┣", "┫", "┏", "┓", "┗", "┛", "━", "┃"];
-      for (let i = 0; i < 15; i++) {
+      const glyphs = ["┌", "┐", "└", "┘", "─", "│", "┼", "├", "┤", "┬", "┴"];
+      for (let i = 0; i < 20; i++) {
         if (signal.stopped) break;
         let line = "";
         for (let j = 0; j < 45; j++) {
-          line += glyphs[Math.floor(Math.random() * glyphs.length)];
+          line += Math.random() > 0.4 ? glyphs[Math.floor(Math.random() * glyphs.length)] : " ";
         }
-        append(line);
+        append(line, "log-ok");
         await new Promise(r => setTimeout(r, 120));
       }
-      append("[PIPES END]");
     }
   };
 };
 
-// 7. Neofetch / Fastfetch (Arch Linux Edition)
+// ── 7. Neofetch ──────────────────────────────────────────────────────────────
 commands['neofetch'] = commands['fastfetch'] = () => {
+  const isCrt = state.crtEnabled ? 'Enabled' : 'Disabled';
   return {
     text: `
-      /\\         user@arch-system
-     /  \\        ----------------
-    /\\   \\       OS: I use Arch btw.
-   /      \\      Kernel: I use Arch btw.
-  /   ,,   \\     Uptime: Been using it forever now.
- /   |  |  -\\    Shell: I use Arch btw.
-/_-''    ''-_\\   Terminal: I use Arch btw.
-                 Memory: 1kb (In this economy?!)
-                 Theme: ${state.currentTheme.toUpperCase()}
-                 Status: Sweaty, I use Arch btw.
-    `
+    /\\         guest@ascii-gateway
+   /  \\        -------------------
+  /\\   \\       OS: Retro Gateway OS x86_64
+ /      \\      Host: Proxmox VE Cluster Node
+/   ,,   \\     Kernel: 6.8.4-pve
+/   |  |  \\    Uptime: 42 days, 13 hours
+/_-'' ''-_\\    Packages: 42 (npm)
+               Shell: retro-sh 1.0
+               Terminal: CRT VT-220 Monospace
+               Theme: ${state.currentTheme.toUpperCase()} (Phosphor)
+               CRT Scanlines: ${isCrt}
+               Memory: 16.2GiB / 64.0GiB
+    `.trim()
   };
 };
 
-// 8. Fortune
+// ── 8. Fortune ───────────────────────────────────────────────────────────────
 commands['fortune'] = () => {
-  const fortunes = [
-    "\"There are 10 types of people in the world: those who understand binary, and those who don't.\"",
-    "\"It works on my machine.\" — Unknown Developer",
-    "\"If at first you don't succeed, call it version 1.0.\"",
-    "\"Walking on water and developing software from a specification are easy if both are frozen.\" — Edward V. Berard",
-    "\"To understand recursion, one must first understand recursion.\"",
-    "\"The best thing about a boolean is even if you are wrong, you are only off by a bit.\"",
-    "\"There is no cloud, it's just someone else's computer.\"",
-    "\"Computers are fast; programmers keep it slow.\""
+  const quotes = [
+    "“There is no place like 127.0.0.1.”",
+    "“To err is human, but to really foul things up you need a computer.”",
+    "“Unix is simple. It just takes a genius to understand its simplicity.”",
+    "“The quieter you become, the more you are able to hear.”",
+    "“Simplicity is prerequisite for reliability.” — Edsger W. Dijkstra",
+    "“There are 10 types of people in the world: those who understand binary, and those who don't.”",
+    "“A good programmer is someone who always looks both ways before crossing a one-way street.”"
   ];
-  return { text: fortunes[Math.floor(Math.random() * fortunes.length)] };
+  return { text: quotes[Math.floor(Math.random() * quotes.length)] };
 };
 
-// 9. Hollywood
+// ── 9. Hollywood Mainframe Hack ──────────────────────────────────────────────
 commands['hollywood'] = () => {
   return {
-    text: "[INITIALIZING MAINFRAME CYBER SECURITY BYPASS...]",
+    text: "[ACCESSING MAINFRAME BACKDOOR...]",
     asyncRunner: async (append, signal) => {
       const logs = [
-        ">> Scanning subnet 192.168.1.0/24...",
-        ">> Port 22/SSH [OPEN] - OpenSSH 8.9p1",
-        ">> Port 8006/HTTPS [OPEN] - Gateway Web GUI",
-        ">> Bypassing RSA 4096-bit handshake...",
-        ">> Injecting memory payload to 0x7FFF004B...",
-        ">> Escalating privilege to ring 0...",
-        ">> ACCESS GRANTED. Welcome, Operator."
+        "[*] Probing port 22/ssh on satellite gateway 10.0.4.1...",
+        "[+] Handshake acknowledged. Injecting memory payload...",
+        "[!] Overriding RSA-4096 cryptokey with quantum bypass...",
+        "[*] Bypassing secondary firewall checksums...",
+        "[+] Buffer overflow triggered in root daemon (0xDEADBEEF)...",
+        "[+] Root shell acquired on mainframe node #4!",
+        "--------------------------------------------------",
+        "ACCESS GRANTED: WELCOME TO PROXMOX CORE HYPERVISOR"
       ];
       for (const log of logs) {
         if (signal.stopped) break;
         append(log, "log-ok");
-        await new Promise(r => setTimeout(r, 250));
+        await new Promise(r => setTimeout(r, 220));
       }
     }
   };
 };
 
-// 10. Figlet / Banner
-commands['figlet'] = commands['banner'] = (args) => {
-  const str = args.join(' ') || 'ASCII';
-  return { text: `[ FIGLET RENDER ]\n\n  ___ _      _     _   \n | __(_)__ _| |___| |_ \n | _|| / _\` | / -_)  _|\n |_| |_\\__, |_\\___|\\__|\n       |___/           \n\n>> Text: "${str.toUpperCase()}"` };
-};
-
-// 11. Nyan Cat
+// ── 10. Nyan Cat ─────────────────────────────────────────────────────────────
 commands['nyan'] = commands['nyancat'] = () => {
   return {
     text: `
@@ -211,24 +223,238 @@ commands['nyan'] = commands['nyancat'] = () => {
   };
 };
 
-// 12. Snake (Mini ASCII Game)
+// ── 11. PLAYABLE INTERACTIVE SNAKE GAME ───────────────────────────────────────
 commands['snake'] = () => {
   return {
-    text: `
-+--[ RETRO SNAKE ]--------------------+
-|                                     |
-|     OOOO                            |
-|        O       * (FOOD)             |
-|        OOOO>                        |
-|                                     |
-|  SCORE: 00420  | HIGH: 01337        |
-+-------------------------------------+
-(Use arrow keys to move)
-    `
+    text: "[RETRO SNAKE INITIALIZED - USE ARROW KEYS / WASD TO MOVE, Q TO QUIT]",
+    asyncRunner: async (append, signal, updateFrame) => {
+      const width = 24;
+      const height = 10;
+      let snake: [number, number][] = [[10, 5], [9, 5], [8, 5]];
+      let dir: [number, number] = [1, 0];
+      let nextDir: [number, number] = [1, 0];
+      let food: [number, number] = [16, 5];
+      let score = 0;
+      let gameOver = false;
+
+      function spawnFood() {
+        while (true) {
+          const fx = Math.floor(Math.random() * width);
+          const fy = Math.floor(Math.random() * height);
+          if (!snake.some(([x, y]) => x === fx && y === fy)) {
+            food = [fx, fy];
+            break;
+          }
+        }
+      }
+
+      const keyHandler = (e: KeyboardEvent) => {
+        const k = e.key.toLowerCase();
+        if (k === 'arrowup' || k === 'w') {
+          if (dir[1] !== 1) nextDir = [0, -1];
+          e.preventDefault();
+        } else if (k === 'arrowdown' || k === 's') {
+          if (dir[1] !== -1) nextDir = [0, 1];
+          e.preventDefault();
+        } else if (k === 'arrowleft' || k === 'a') {
+          if (dir[0] !== 1) nextDir = [-1, 0];
+          e.preventDefault();
+        } else if (k === 'arrowright' || k === 'd') {
+          if (dir[0] !== -1) nextDir = [1, 0];
+          e.preventDefault();
+        } else if (k === 'q' || k === 'escape') {
+          signal.stopped = true;
+        }
+      };
+
+      window.addEventListener('keydown', keyHandler);
+
+      try {
+        while (!signal.stopped && !gameOver) {
+          dir = nextDir;
+          const head = snake[0];
+          const newHead: [number, number] = [head[0] + dir[0], head[1] + dir[1]];
+
+          // Wall collision
+          if (newHead[0] < 0 || newHead[0] >= width || newHead[1] < 0 || newHead[1] >= height) {
+            gameOver = true;
+            break;
+          }
+
+          // Self collision
+          if (snake.some(([x, y]) => x === newHead[0] && y === newHead[1])) {
+            gameOver = true;
+            break;
+          }
+
+          snake.unshift(newHead);
+
+          // Eat food
+          if (newHead[0] === food[0] && newHead[1] === food[1]) {
+            score += 100;
+            sound.playBeep(980, 0.06, 'triangle');
+            spawnFood();
+          } else {
+            snake.pop();
+          }
+
+          // Render board
+          let board = `+--[ RETRO SNAKE | SCORE: ${String(score).padStart(5, '0')} ]--+\n`;
+          for (let y = 0; y < height; y++) {
+            let row = '|';
+            for (let x = 0; x < width; x++) {
+              if (x === snake[0][0] && y === snake[0][1]) {
+                row += 'O'; // Head
+              } else if (snake.some(([sx, sy]) => sx === x && sy === y)) {
+                row += 'o'; // Body
+              } else if (x === food[0] && y === food[1]) {
+                row += '*'; // Food
+              } else {
+                row += ' ';
+              }
+            }
+            row += '|\n';
+            board += row;
+          }
+          board += `+---------------------------------------+\n Controls: [Arrows / WASD] Move • [Q] Quit`;
+
+          if (updateFrame) {
+            updateFrame(board, 'log-ok');
+          }
+
+          await new Promise(r => setTimeout(r, 130));
+        }
+
+        if (gameOver) {
+          sound.playErrorBuzz();
+          const overScreen = `\n=========================================\n       GAME OVER! FINAL SCORE: ${score}\n=========================================\nType 'snake' to play again!`;
+          if (updateFrame) {
+            updateFrame(overScreen, 'log-err');
+          } else {
+            append(overScreen, 'log-err');
+          }
+        }
+      } finally {
+        window.removeEventListener('keydown', keyHandler);
+      }
+    }
   };
 };
 
-// 13. Tetris
+// ── 12. PLAYABLE INTERACTIVE PONG GAME ────────────────────────────────────────
+commands['pong'] = () => {
+  return {
+    text: "[RETRO PONG INITIALIZED - USE W/S OR UP/DOWN KEYS TO DEFEND]",
+    asyncRunner: async (append, signal, updateFrame) => {
+      const width = 32;
+      const height = 10;
+      let pY = 4;
+      let cpuY = 4;
+      let bX = 16;
+      let bY = 5;
+      let vX = 1;
+      let vY = 0.5;
+      let pScore = 0;
+      let cpuScore = 0;
+
+      const keyHandler = (e: KeyboardEvent) => {
+        const k = e.key.toLowerCase();
+        if (k === 'arrowup' || k === 'w') {
+          if (pY > 1) pY--;
+          e.preventDefault();
+        } else if (k === 'arrowdown' || k === 's') {
+          if (pY < height - 3) pY++;
+          e.preventDefault();
+        } else if (k === 'q' || k === 'escape') {
+          signal.stopped = true;
+        }
+      };
+
+      window.addEventListener('keydown', keyHandler);
+
+      try {
+        for (let t = 0; t < 150; t++) {
+          if (signal.stopped) break;
+
+          // Move ball
+          bX += vX;
+          bY += vY;
+
+          // Top/bottom bounce
+          if (bY <= 0 || bY >= height - 1) {
+            vY = -vY;
+            sound.playBeep(440, 0.03, 'sine');
+          }
+
+          // Player paddle bounce (x = 1)
+          if (bX <= 2 && bX >= 1) {
+            if (bY >= pY - 1 && bY <= pY + 2) {
+              vX = Math.abs(vX);
+              sound.playBeep(700, 0.05, 'triangle');
+            }
+          }
+
+          // CPU paddle bounce (x = width - 2)
+          if (bX >= width - 3) {
+            if (bY >= cpuY - 1 && bY <= cpuY + 2) {
+              vX = -Math.abs(vX);
+              sound.playBeep(600, 0.05, 'triangle');
+            }
+          }
+
+          // Point scored
+          if (bX < 0) {
+            cpuScore++;
+            sound.playErrorBuzz();
+            bX = 16; bY = 5; vX = 1;
+          } else if (bX > width) {
+            pScore++;
+            sound.playSuccessChime();
+            bX = 16; bY = 5; vX = -1;
+          }
+
+          // CPU AI
+          if (Math.random() > 0.3) {
+            if (cpuY + 1 < bY && cpuY < height - 3) cpuY++;
+            if (cpuY + 1 > bY && cpuY > 1) cpuY--;
+          }
+
+          // Render board
+          let board = `+--[ PONG | YOU: ${pScore}  CPU: ${cpuScore} ]-----------------+\n`;
+          for (let y = 0; y < height; y++) {
+            let row = '|';
+            for (let x = 0; x < width; x++) {
+              if (x === 1 && (y >= pY && y <= pY + 2)) {
+                row += ']'; // Player
+              } else if (x === width - 2 && (y >= cpuY && y <= cpuY + 2)) {
+                row += '['; // CPU
+              } else if (Math.round(x) === Math.round(bX) && Math.round(y) === Math.round(bY)) {
+                row += 'O'; // Ball
+              } else if (x === Math.floor(width / 2)) {
+                row += ':'; // Net
+              } else {
+                row += ' ';
+              }
+            }
+            row += '|\n';
+            board += row;
+          }
+          board += `+---------------------------------------+\n Controls: [W / S / Arrows] Move • [Q] Quit`;
+
+          if (updateFrame) {
+            updateFrame(board, 'log-ok');
+          }
+
+          await new Promise(r => setTimeout(r, 90));
+        }
+      } finally {
+        window.removeEventListener('keydown', keyHandler);
+      }
+    }
+  };
+};
+
+// ── 13. Tetris ───────────────────────────────────────────────────────────────
 commands['tetris'] = () => {
   return {
     text: `
@@ -240,47 +466,203 @@ commands['tetris'] = () => {
 | . [][][][]. . . . . |  LINES: 24
 | [][][][][][][][][]. |  SCORE: 8400
 +---------------------+
+Type 'snake' or 'pong' for interactive playable arcade games!
     `
   };
 };
 
-// 14. Pong
-commands['pong'] = () => {
-  return {
-    text: `
-+--[ PONG 1972 ]----------------------+
-| |                                 | |
-| |              o                  | |
-| |                                 | |
-|                                   | |
-| CPU: 2                   PLAYER: 3  |
-+-------------------------------------+
-    `
-  };
+// ── 14. STATEFUL ZORK DUNGEON ADVENTURE ───────────────────────────────────────
+const zorkState = {
+  room: 'west_of_house',
+  mailboxOpen: false,
+  windowOpen: false,
+  trapDoorOpen: false,
+  lanternLit: false,
+  trollDefeated: false,
+  inventory: [] as string[]
 };
 
-// 15. Zork / Adventure
 commands['zork'] = commands['adventure'] = (args) => {
-  const act = args.join(' ').toLowerCase();
-  if (act === 'look' || !act) {
-    return {
-      text: `WEST OF HOUSE\nYou are standing in an open field west of a white house, with a boarded front door.\nThere is a small mailbox here.\n(Try: 'zork open mailbox' or 'zork go north')`
-    };
+  const act = args.join(' ').toLowerCase().trim();
+
+  if (!act || act === 'look' || act === 'l') {
+    if (zorkState.room === 'west_of_house') {
+      const mbStatus = zorkState.mailboxOpen 
+        ? (!zorkState.inventory.includes('leaflet') ? "The mailbox contains a leaflet." : "The mailbox is empty.")
+        : "There is a small mailbox here.";
+      return {
+        text: `WEST OF HOUSE\nYou are standing in an open field west of a white house, with a boarded front door.\n${mbStatus}\n(Exits: north, south, east)`
+      };
+    }
+    if (zorkState.room === 'north_of_house') {
+      return {
+        text: `NORTH OF HOUSE\nYou are facing the north side of a white house. All windows are boarded up.\n(Exits: west, east)`
+      };
+    }
+    if (zorkState.room === 'behind_house') {
+      const winStatus = zorkState.windowOpen ? "The kitchen window is wide open." : "A small kitchen window is slightly ajar.";
+      return {
+        text: `BEHIND HOUSE\nYou are behind the white house.\n${winStatus}\n(Exits: west, enter window)`
+      };
+    }
+    if (zorkState.room === 'kitchen') {
+      const items: string[] = [];
+      if (!zorkState.inventory.includes('lantern')) items.push("a brass lantern");
+      if (!zorkState.inventory.includes('sack')) items.push("an elongated brown sack");
+      const itemStr = items.length ? `On the table is ${items.join(' and ')}.` : '';
+      return {
+        text: `KITCHEN\nYou are in the kitchen of the white house. A dark doorway leads west.\n${itemStr}\n(Exits: west, exit window)`
+      };
+    }
+    if (zorkState.room === 'living_room') {
+      const swordStr = !zorkState.inventory.includes('sword') ? "A glowing elvish sword hangs in a trophy case." : "";
+      const trapStr = zorkState.trapDoorOpen ? "A dark trap door leads down into the depths." : "A heavy Oriental rug lies on the floor.";
+      return {
+        text: `LIVING ROOM\nYou are in the living room.\n${swordStr}\n${trapStr}\n(Exits: east, down)`
+      };
+    }
+    if (zorkState.room === 'cellar') {
+      if (!zorkState.lanternLit) {
+        return { text: "It is pitch black. You are likely to be eaten by a Grue.\n(Try: 'zork light lantern' or 'zork up')", isError: true };
+      }
+      const trollStr = zorkState.trollDefeated ? "The unconscious Troll lies in the corner." : "A menacing Troll brandishing an axe blocks the northern path!";
+      return {
+        text: `CELLAR\nYou are in a cold stone cellar illuminated by your lantern.\n${trollStr}\n(Exits: up, north)`
+      };
+    }
+    if (zorkState.room === 'treasure_room') {
+      return {
+        text: `TREASURE VAULT OF ZORK!\nYou have discovered the legendary treasure vaults of the Great Underground Empire!\nA jeweled chest overflows with gold and ancient relics!\n\n*** CONGRATULATIONS! YOU HAVE WON ZORK! ***`,
+        isSuccess: true
+      };
+    }
   }
-  if (act.includes('mailbox')) {
-    return {
-      text: `Opening the small mailbox reveals a leaflet:\n"WELCOME TO ZORK! Your gateway to an ancient underground empire."`
-    };
+
+  // Navigation
+  if (act === 'go north' || act === 'n' || act === 'north') {
+    if (zorkState.room === 'west_of_house') { zorkState.room = 'north_of_house'; return commands['zork'](['look'], ''); }
+    if (zorkState.room === 'north_of_house') { return { text: "The forest is too dense to enter." }; }
+    if (zorkState.room === 'cellar') {
+      if (!zorkState.trollDefeated) return { text: "The Troll swings his axe and blocks your path! Defeat him first!", isError: true };
+      zorkState.room = 'treasure_room';
+      return commands['zork'](['look'], '');
+    }
+    return { text: "You cannot go that way." };
   }
-  if (act.includes('north')) {
-    return {
-      text: `NORTH OF HOUSE\nYou are facing the north side of a white house. There is no door here, and all the windows are boarded up.`
-    };
+
+  if (act === 'go east' || act === 'e' || act === 'east') {
+    if (zorkState.room === 'west_of_house') { return { text: "The front door is securely boarded up." }; }
+    if (zorkState.room === 'north_of_house') { zorkState.room = 'behind_house'; return commands['zork'](['look'], ''); }
+    if (zorkState.room === 'living_room') { zorkState.room = 'kitchen'; return commands['zork'](['look'], ''); }
+    return { text: "You cannot go that way." };
   }
-  return { text: `I don't know how to "${act}". You are likely to be eaten by a Grue.` };
+
+  if (act === 'go west' || act === 'w' || act === 'west') {
+    if (zorkState.room === 'north_of_house') { zorkState.room = 'west_of_house'; return commands['zork'](['look'], ''); }
+    if (zorkState.room === 'behind_house') { zorkState.room = 'north_of_house'; return commands['zork'](['look'], ''); }
+    if (zorkState.room === 'kitchen') { zorkState.room = 'living_room'; return commands['zork'](['look'], ''); }
+    return { text: "You cannot go that way." };
+  }
+
+  if (act === 'go down' || act === 'd' || act === 'down') {
+    if (zorkState.room === 'living_room') {
+      if (!zorkState.trapDoorOpen) return { text: "The trap door is closed." };
+      zorkState.room = 'cellar';
+      return commands['zork'](['look'], '');
+    }
+    return { text: "You can't go down here." };
+  }
+
+  if (act === 'go up' || act === 'u' || act === 'up') {
+    if (zorkState.room === 'cellar') { zorkState.room = 'living_room'; return commands['zork'](['look'], ''); }
+    return { text: "You can't go up here." };
+  }
+
+  // Interactions
+  if (act.includes('open mailbox')) {
+    zorkState.mailboxOpen = true;
+    return { text: "You open the small mailbox. Inside is a leaflet." };
+  }
+
+  if (act.includes('read leaflet')) {
+    return { text: '"WELCOME TO ZORK! Your gateway to an ancient underground empire."' };
+  }
+
+  if (act.includes('open window') || act.includes('enter window')) {
+    if (zorkState.room === 'behind_house') {
+      zorkState.windowOpen = true;
+      zorkState.room = 'kitchen';
+      return { text: "With great effort, you pry open the window and climb into the kitchen." };
+    }
+    return { text: "No open window here." };
+  }
+
+  if (act.includes('move rug') || act.includes('open rug') || act.includes('open trapdoor') || act.includes('open trap door')) {
+    if (zorkState.room === 'living_room') {
+      zorkState.trapDoorOpen = true;
+      return { text: "You move the heavy rug aside, revealing a trap door! You open it to reveal a dark descent." };
+    }
+  }
+
+  if (act.includes('take') || act.includes('get')) {
+    if (act.includes('leaflet') && zorkState.room === 'west_of_house' && zorkState.mailboxOpen) {
+      zorkState.inventory.push('leaflet');
+      return { text: "Taken: leaflet." };
+    }
+    if (act.includes('lantern') && zorkState.room === 'kitchen') {
+      zorkState.inventory.push('lantern');
+      return { text: "Taken: brass lantern." };
+    }
+    if (act.includes('sack') && zorkState.room === 'kitchen') {
+      zorkState.inventory.push('sack');
+      return { text: "Taken: brown sack." };
+    }
+    if (act.includes('sword') && zorkState.room === 'living_room') {
+      zorkState.inventory.push('sword');
+      return { text: "Taken: elvish sword." };
+    }
+    return { text: "You can't see that here." };
+  }
+
+  if (act.includes('light lantern') || act.includes('turn on lantern')) {
+    if (zorkState.inventory.includes('lantern')) {
+      zorkState.lanternLit = true;
+      return { text: "The brass lantern emits a bright golden beam!", isSuccess: true };
+    }
+    return { text: "You don't have a lantern." };
+  }
+
+  if (act.includes('attack') || act.includes('kill') || act.includes('fight')) {
+    if (zorkState.room === 'cellar' && !zorkState.trollDefeated) {
+      if (zorkState.inventory.includes('sword')) {
+        zorkState.trollDefeated = true;
+        sound.playSuccessChime();
+        return { text: "You strike the Troll with your elvish sword! The Troll falls unconscious to the stone floor!", isSuccess: true };
+      }
+      return { text: "You attack the Troll with your bare hands, but the Troll is far too strong!", isError: true };
+    }
+  }
+
+  if (act === 'inventory' || act === 'i') {
+    if (zorkState.inventory.length === 0) return { text: "Your inventory is currently empty." };
+    return { text: `You are carrying:\n  • ${zorkState.inventory.join('\n  • ')}` };
+  }
+
+  if (act === 'restart' || act === 'reset') {
+    zorkState.room = 'west_of_house';
+    zorkState.mailboxOpen = false;
+    zorkState.windowOpen = false;
+    zorkState.trapDoorOpen = false;
+    zorkState.lanternLit = false;
+    zorkState.trollDefeated = false;
+    zorkState.inventory = [];
+    return { text: "Zork game reset to beginning." };
+  }
+
+  return { text: `I don't know how to "${act}". Try: 'look', 'n', 's', 'e', 'w', 'take <item>', 'inventory', or 'restart'.` };
 };
 
-// 16. Weather / Wttr
+// ── 15. Weather ──────────────────────────────────────────────────────────────
 commands['weather'] = commands['wttr'] = (args) => {
   const city = args.join(' ') || 'Local Gateway';
   return {
@@ -296,7 +678,7 @@ Weather report: ${city}
   };
 };
 
-// 17. Rickroll
+// ── 16. Rickroll ─────────────────────────────────────────────────────────────
 commands['rickroll'] = () => {
   return {
     text: `
@@ -311,7 +693,7 @@ commands['rickroll'] = () => {
   };
 };
 
-// 18. Sudo
+// ── 17. Sudo ─────────────────────────────────────────────────────────────────
 commands['sudo'] = (args) => {
   const cmd = args.join(' ').toLowerCase();
   if (cmd.includes('make me a sandwich') || cmd.includes('sandwich')) {
@@ -323,7 +705,7 @@ commands['sudo'] = (args) => {
   return { text: `[sudo] password for guest: \nUser 'guest' is not in the sudoers file. This incident will be reported.`, isError: true };
 };
 
-// 19. Hack / Nmap
+// ── 18. Hack / Nmap ──────────────────────────────────────────────────────────
 commands['hack'] = commands['nmap'] = (args) => {
   const target = args[0] || '127.0.0.1';
   return {
@@ -338,7 +720,7 @@ Nmap done: 1 IP address scanned in 0.04 seconds.`
   };
 };
 
-// 20. BSOD
+// ── 19. BSOD ─────────────────────────────────────────────────────────────────
 commands['bsod'] = () => {
   return {
     text: `
@@ -353,11 +735,11 @@ Contact your system administrator or restart terminal with 'clear'.
   };
 };
 
-// 21. Top / Htop
+// ── 20. Top / Htop ───────────────────────────────────────────────────────────
 commands['top'] = commands['htop'] = () => {
   return {
     text: `
-top - ${new Date().toLocaleTimeString()} up 42 days, 1 user,  load average: 0.12, 0.08, 0.05
+top - ${new Date().toLocaleTimeString()} up 42 days, 1 user, load average: 0.12, 0.08, 0.05
 Tasks:  84 total,   1 running,  83 sleeping,   0 stopped,   0 zombie
 %Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.2 id,  0.1 wa,  0.0 hi,  0.1 si
 MiB Mem :  64380.2 total,  48120.4 free,  16259.8 used,   3240.1 buff/cache
@@ -371,14 +753,14 @@ MiB Mem :  64380.2 total,  48120.4 free,  16259.8 used,   3240.1 buff/cache
   };
 };
 
-// 22. Whoami
+// ── 21. Whoami ───────────────────────────────────────────────────────────────
 commands['whoami'] = () => {
   return {
     text: state.authenticated ? "root (authorized system administrator)" : "guest (unprivileged visitor)"
   };
 };
 
-// 23. Uname
+// ── 22. Uname ────────────────────────────────────────────────────────────────
 commands['uname'] = (args) => {
   if (args.includes('-a')) {
     return { text: "Linux arch-gateway 6.8.4-arch1-1 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux" };
@@ -386,12 +768,12 @@ commands['uname'] = (args) => {
   return { text: "Linux" };
 };
 
-// 24. Uptime
+// ── 23. Uptime ───────────────────────────────────────────────────────────────
 commands['uptime'] = () => {
   return { text: `${new Date().toLocaleTimeString()} up 42 days, 13:37, 1 user, load average: 0.08, 0.04, 0.01` };
 };
 
-// 25. Date & Cal
+// ── 24. Date & Cal ───────────────────────────────────────────────────────────
 commands['date'] = () => ({ text: new Date().toString() });
 commands['cal'] = () => {
   const d = new Date();
@@ -409,7 +791,7 @@ Su Mo Tu We Th Fr Sa
   };
 };
 
-// 26. Help / Man (Completely clean - no admin/login hints)
+// ── 25. Help / Man ───────────────────────────────────────────────────────────
 commands['help'] = commands['man'] = () => {
   const adminSection = state.authenticated ? `
 ADMINISTRATION:
@@ -419,7 +801,7 @@ ADMINISTRATION:
 
   return {
     text: `
-======================[ RETRO TERMINAL UTILITIES ]======================
+=====================[ RETRO TERMINAL UTILITIES ]======================
 SYSTEM & DIRECTORY:
   theme <green|amber|cyan|white|matrix>  Change CRT phosphor palette
   audio <on|off>                         Toggle keyclicks and PC beeps
@@ -431,15 +813,16 @@ SYSTEM & DIRECTORY:
   ping <host>, traceroute <host>         Network diagnostics
 
 UTILITIES & RECREATION:
-  cowsay, cowthink, neofetch, fortune, starwars, matrix, sl, pipes,
-  hollywood, snake, tetris, pong, zork, weather, rickroll, bsod,
-  roll, flip, 8ball, quote, joke, dvd, fire, life, clock, donut, tux
+  snake, pong, tetris, zork              Playable ASCII games
+  cowsay, cowthink, neofetch, fortune    Fun UNIX tools
+  starwars, matrix, sl, pipes, hollywood Demoscene animations
+  roll, flip, 8ball, quote, joke, weather Classic mini-utilities
 ${adminSection}========================================================================
     `.trim()
   };
 };
 
-// 27. Ls / Dir
+// ── 26. Ls / Dir ─────────────────────────────────────────────────────────────
 commands['ls'] = commands['dir'] = () => {
   return {
     text: `
@@ -452,21 +835,21 @@ drwxr-xr-x 2 root root  4096 Aug 26 00:00 data/
   };
 };
 
-// 28. Cat
+// ── 27. Cat ──────────────────────────────────────────────────────────────────
 commands['cat'] = (args) => {
-  const file = args[0] || '';
-  if (file.includes('motd') || file.includes('issue')) {
-    return { text: state.data?.motd || "ASCII DIRECTORY GATEWAY v1.0" };
+  const file = (args[0] || '').toLowerCase();
+  if (file.includes('motd')) {
+    return { text: state.data?.motd || "SYSTEM READY." };
   }
-  if (file.includes('hosts')) {
-    return { text: "127.0.0.1 localhost\n192.168.1.1 gateway.local" };
+  if (file.includes('directory') || file.includes('json')) {
+    return { text: JSON.stringify(state.data, null, 2) };
   }
   return { text: `cat: ${file || 'file'}: No such file or directory`, isError: true };
 };
 
-// 29. Ping
+// ── 28. Ping ─────────────────────────────────────────────────────────────────
 commands['ping'] = (args) => {
-  const host = args[0] || 'gateway.local';
+  const host = args[0] || '1.1.1.1';
   return {
     text: `PING ${host} (192.168.1.1): 56 data bytes
 64 bytes from 192.168.1.1: icmp_seq=0 ttl=64 time=0.421 ms
@@ -477,7 +860,7 @@ commands['ping'] = (args) => {
   };
 };
 
-// 30. Traceroute
+// ── 29. Traceroute ───────────────────────────────────────────────────────────
 commands['traceroute'] = (args) => {
   const host = args[0] || 'cloudflare.com';
   return {
@@ -488,7 +871,7 @@ commands['traceroute'] = (args) => {
   };
 };
 
-// 31. Theme
+// ── 30. Theme ────────────────────────────────────────────────────────────────
 commands['theme'] = (args) => {
   const target = (args[0] || '').toLowerCase() as ThemeType;
   if (['green', 'amber', 'cyan', 'white', 'matrix'].includes(target)) {
@@ -499,7 +882,7 @@ commands['theme'] = (args) => {
   return { text: `Usage: theme <green|amber|cyan|white|matrix> (Current: ${state.currentTheme})` };
 };
 
-// 32. Audio / Sound
+// ── 31. Audio / Sound ────────────────────────────────────────────────────────
 commands['audio'] = commands['sound'] = (args) => {
   const target = (args[0] || '').toLowerCase();
   if (target === 'on') {
@@ -514,7 +897,7 @@ commands['audio'] = commands['sound'] = (args) => {
   return { text: `[AUDIO] Sound is now ${status ? 'ON' : 'MUTED'}.` };
 };
 
-// 33. Scanlines / CRT
+// ── 32. Scanlines / CRT ──────────────────────────────────────────────────────
 commands['scanlines'] = commands['crt'] = (args) => {
   const target = (args[0] || '').toLowerCase();
   if (target === 'on') {
@@ -529,19 +912,19 @@ commands['scanlines'] = commands['crt'] = (args) => {
   return { text: `[CRT] Shaders are now ${current ? 'ENABLED' : 'DISABLED'}.` };
 };
 
-// 34. Clear / Cls
+// ── 33. Clear / Cls ──────────────────────────────────────────────────────────
 commands['clear'] = commands['cls'] = () => ({ clear: true });
 
-// 35. History
-commands['history'] = () => ({ text: "Command history buffer active." });
+// ── 34. History ──────────────────────────────────────────────────────────────
+commands['history'] = () => ({ text: "Command history buffer active. Use Up/Down arrows in command bar." });
 
-// 36. Echo
+// ── 35. Echo ─────────────────────────────────────────────────────────────────
 commands['echo'] = (args) => ({ text: args.join(' ') });
 
-// 37. Motd
+// ── 36. Motd ─────────────────────────────────────────────────────────────────
 commands['motd'] = () => ({ text: state.data?.motd || "SYSTEM READY." });
 
-// 38. Ps & Kill
+// ── 37. Ps & Kill ────────────────────────────────────────────────────────────
 commands['ps'] = () => ({
   text: `
   PID TTY          TIME CMD
@@ -554,7 +937,7 @@ commands['ps'] = () => ({
 });
 commands['kill'] = (args) => ({ text: `kill: (${args[0] || 'pid'}): Operation not permitted for guest user`, isError: true });
 
-// 39. Df -h
+// ── 38. Df -h ────────────────────────────────────────────────────────────────
 commands['df'] = () => ({
   text: `
 Filesystem      Size  Used Avail Use% Mounted on
@@ -563,7 +946,7 @@ tmpfs            32G  1.2M   32G   1% /dev/shm
   `
 });
 
-// 40. Free -m
+// ── 39. Free -m ──────────────────────────────────────────────────────────────
 commands['free'] = () => ({
   text: `
                total        used        free      shared  buff/cache   available
@@ -572,17 +955,17 @@ Swap:           8192           0        8192
   `
 });
 
-// 41. Ifconfig / Ip
+// ── 40. Ifconfig / Ip ────────────────────────────────────────────────────────
 commands['ifconfig'] = commands['ip'] = () => ({
   text: `
 eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
       inet 192.168.1.100  netmask 255.255.255.0  broadcast 192.168.1.255
 cf0:  flags=4099<UP,BROADCAST,MULTICAST>  mtu 1280
-      inet 10.0.4.2  netmask 255.255.255.255 (Cloudflare Tunnel)
+      inet 10.0.4.2  netmask 255.255.255.255 (Cloudflare Secure Route)
   `
 });
 
-// 42. Netstat
+// ── 41. Netstat ──────────────────────────────────────────────────────────────
 commands['netstat'] = () => ({
   text: `
 Active Internet connections (servers and established)
@@ -592,248 +975,109 @@ tcp        0      0 192.168.1.100:3000      192.168.1.50:54321      ESTABLISHED
   `
 });
 
-// 43. Grep
+// ── 42. Grep ─────────────────────────────────────────────────────────────────
 commands['grep'] = (args) => {
   const query = args.join(' ').toLowerCase();
   if (!query) return { text: "Usage: grep <keyword>" };
   const matches: string[] = [];
   state.flattenedEntries.forEach(item => {
-    if (item.entry.title.toLowerCase().includes(query) || 
-        item.entry.url.toLowerCase().includes(query) || 
-        item.entry.description.toLowerCase().includes(query)) {
-      matches.push(`[${String(item.globalIndex).padStart(2, '0')}] ${item.entry.title} -> ${item.entry.url}`);
+    const inTitle = item.entry.title.toLowerCase().includes(query);
+    const inUrl = item.entry.url.toLowerCase().includes(query);
+    const inDesc = (item.entry.description || '').toLowerCase().includes(query);
+    const inTag = (item.entry.tags || []).some(t => t.toLowerCase().includes(query));
+    if (inTitle || inUrl || inDesc || inTag) {
+      matches.push(`[${String(item.globalIndex).padStart(2, '0')}] ${item.entry.title} - ${item.entry.url} (${item.category.name})`);
     }
   });
-  return {
-    text: matches.length > 0 
-      ? `Matches for "${query}":\n${matches.join('\n')}` 
-      : `No directory matches for "${query}".`
-  };
+  if (matches.length === 0) return { text: `No directory matches found for "${query}".` };
+  return { text: `Grep results for "${query}":\n${matches.join('\n')}`, isSuccess: true };
 };
 
-// 44. Wc
-commands['wc'] = (args) => {
-  const text = args.join(' ');
-  const lines = text ? text.split('\n').length : 0;
-  const words = text ? text.trim().split(/\s+/).length : 0;
-  const chars = text.length;
-  return { text: `  ${lines}  ${words}  ${chars}` };
+// ── 43. Roll / Dice ──────────────────────────────────────────────────────────
+commands['roll'] = commands['dice'] = (args) => {
+  const sides = parseInt(args[0] || '6', 10) || 6;
+  const result = Math.floor(Math.random() * sides) + 1;
+  return { text: `Rolling d${sides}... Result: [ ${result} ]`, isSuccess: true };
 };
 
-// 45. Rev
-commands['rev'] = (args) => ({ text: args.join(' ').split('').reverse().join('') });
-
-// 46. Rot13
-commands['rot13'] = (args) => {
-  const str = args.join(' ');
-  return {
-    text: str.replace(/[a-zA-Z]/g, (c) => {
-      const code = c.charCodeAt(0);
-      const base = code >= 97 ? 97 : 65;
-      return String.fromCharCode(((code - base + 13) % 26) + base);
-    })
-  };
+// ── 44. Flip Coin ────────────────────────────────────────────────────────────
+commands['flip'] = commands['coin'] = () => {
+  const res = Math.random() > 0.5 ? "HEADS" : "TAILS";
+  return { text: `Flipping coin... Result: [ ${res} ]` };
 };
 
-// 47. Base64
-commands['base64'] = (args) => {
-  const mode = args[0];
-  const payload = args.slice(1).join(' ');
-  if (mode === '-d' || mode === '--decode') {
-    try {
-      return { text: atob(payload) };
-    } catch {
-      return { text: "base64: invalid input data", isError: true };
-    }
-  }
-  return { text: btoa(payload || mode || '') };
-};
-
-// 48. Md5
-commands['md5'] = (args) => {
-  const str = args.join(' ') || 'retro';
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return { text: `md5 (${str}) = ${Math.abs(hash).toString(16).padStart(32, '0')}` };
-};
-
-// 49. Roll
-commands['roll'] = (args) => {
-  const dice = args[0] || '1d6';
-  const match = dice.match(/^(\d+)d(\d+)$/i);
-  if (!match) return { text: "Usage: roll 2d6, roll 1d20" };
-  const count = parseInt(match[1], 10);
-  const sides = parseInt(match[2], 10);
-  let total = 0;
-  const rolls: number[] = [];
-  for (let i = 0; i < count; i++) {
-    const r = Math.floor(Math.random() * sides) + 1;
-    rolls.push(r);
-    total += r;
-  }
-  return { text: `Rolling ${dice}: [${rolls.join(', ')}] => Total: ${total}`, isSuccess: true };
-};
-
-// 50. Flip
-commands['flip'] = () => {
-  const heads = Math.random() > 0.5;
-  return {
-    text: `
-   .-----.
-  /       \\   Coin Result:
- |   ${heads ? 'HEADS' : 'TAILS'}  |
-  \\       /
-   '-----'
-    `,
-    isSuccess: true
-  };
-};
-
-// 51. 8ball
-commands['8ball'] = (args) => {
+// ── 45. 8ball ────────────────────────────────────────────────────────────────
+commands['8ball'] = () => {
   const answers = [
     "It is certain.", "Without a doubt.", "You may rely on it.",
     "Ask again later.", "Cannot predict now.", "Don't count on it.",
-    "My sources say no.", "Outlook not so good.", "Very doubtful."
+    "My sources say no.", "Outlook very good.", "Signs point to yes."
   ];
-  return {
-    text: `[MAGIC 8-BALL]: ${answers[Math.floor(Math.random() * answers.length)]}`
-  };
+  return { text: `Magic 8-Ball says: “${answers[Math.floor(Math.random() * answers.length)]}”` };
 };
 
-// 52. Quote
+// ── 46. Quote ────────────────────────────────────────────────────────────────
 commands['quote'] = () => {
-  const quotes = [
-    "\"The only way to do great work is to love what you do.\" — Steve Jobs",
-    "\"Talk is cheap. Show me the code.\" — Linus Torvalds",
-    "\"Simplicity is prerequisite for reliability.\" — Edsger W. Dijkstra",
-    "\"Computers are useless. They can only give you answers.\" — Pablo Picasso"
-  ];
-  return { text: quotes[Math.floor(Math.random() * quotes.length)] };
+  return { text: "“The only true wisdom is in knowing you know nothing.” — Socrates" };
 };
 
-// 53. Joke
+// ── 47. Joke ─────────────────────────────────────────────────────────────────
 commands['joke'] = () => {
   const jokes = [
     "Why do programmers prefer dark mode? Because light attracts bugs.",
-    "There are 2 hard problems in computer science: cache invalidation, naming things, and off-by-one errors.",
-    "A SQL query walks into a bar, walks up to two tables and asks: 'Can I join you?'",
-    "Why did the JavaScript developer wear glasses? Because they didn't C#."
+    "There are 10 types of people: those who understand binary, and 9 who didn't expect this base 3 joke.",
+    "A SQL query walks into a bar, walks up to two tables and asks: 'Can I join you?'"
   ];
   return { text: jokes[Math.floor(Math.random() * jokes.length)] };
 };
 
-// 54. DVD Screensaver
+// ── 48. DVD Screensaver ──────────────────────────────────────────────────────
 commands['dvd'] = () => {
   return {
     text: `
-+------------------------------------+
-|                                    |
-|         [  D V D  ]                |
-|                                    |
-+------------------------------------+
-* BOUNCE! It hit the corner! *
++---------------------------------------+
+|                                       |
+|          [ DVD ]                      |
+|                                       |
+|                                       |
++---------------------------------------+
+(Will it hit the corner? Only time will tell.)
     `
   };
 };
 
-// 55. Fire (Demoscene ASCII Fire)
+// ── 49. Fire ─────────────────────────────────────────────────────────────────
 commands['fire'] = () => {
   return {
     text: `
-         (  .      )
-     )           (              )
-           .  ___   .        .
-      ( .   (   )    . )
-    .....:::(...)::::.....
-   :::::::::::::::::::::::::
-  W W W W W W W W W W W W W W
+       (  .      )
+   )           (              )
+         .  '   .   '  .  '  .
+(    , )       (.   )  (   ',    )
+  .' ) ( . )    ,  ( ,     )   ( .
+  ). , ( .   (  ) ( , ) '. ( ,  )
+ (_/ (_/ (_/ (_/ (_/ (_/ (_/ (_/
     `
   };
 };
 
-// 56. Life (Game of Life)
-commands['life'] = commands['conway'] = () => {
+// ── 50. Tux ──────────────────────────────────────────────────────────────────
+commands['tux'] = () => {
   return {
     text: `
-Conway's Game of Life (Glider Gun Generation 42):
-  . . . . . . . . . . . . . . . . . . . . . . . .
-  . . . . . . . . . . . . . . . . . . . . . . . .
-  . . . . . . . . . . . . O O . . . . . . . . . .
-  . . . . . . . . . . . O . . . O . . . . . . . .
-  . . O O . . . . . . O . . . . . O . . O O . . .
-  . . O O . . . . . . O . . . O . O . . O O . . .
-  . . . . . . . . . . O . . . . . O . . . . . . .
+   .--.
+  |o_o |
+  |:_/ |
+ //   \\ \\
+(|     | )
+/'\\_   _/\`\\
+\\___)=(___/
+Linux Forever!
     `
   };
 };
 
-// 57. Clock
+// ── 51. Clock ────────────────────────────────────────────────────────────────
 commands['clock'] = () => {
-  const d = new Date();
-  const time = d.toTimeString().split(' ')[0];
-  return {
-    text: `
-+--[ RETRO DIGITAL CLOCK ]------------+
-|                                     |
-|           ${time}                  |
-|                                     |
-+-------------------------------------+
-    `
-  };
-};
-
-// 58. Donut (3D Spinning Donut ASCII)
-commands['donut'] = () => {
-  return {
-    text: `
-             k!;yurzaao=
-          !eN@@@@@@@@@@@@8e:
-        $@@@@@@@@@@@@@@@@@@@@$
-      8@@@@@@@$!:    :!$@@@@@@@8
-     &@@@@@$              $@@@@@&
-    $@@@@@                  @@@@@$
-    @@@@@8                  8@@@@@
-    &@@@@@$                $@@@@@&
-     8@@@@@@$!:        :!$@@@@@@8
-      $@@@@@@@@@@@@@@@@@@@@@@@@$
-        !eN@@@@@@@@@@@@@@@@8e:
-             k!;yurzaao=
-    `
-  };
-};
-
-// 59. Tux / Mascot
-commands['tux'] = commands['mascot'] = () => {
-  return {
-    text: `
-         .---.
-        /     \\
-       | () () |
-        \\  _  /
-        /     \\
-       /|     |\\
-      / |     | \\
-     /  |     |  \\
-    (   |     |   )
-   /    |     |    \\
-  (____/       \\____)
-    `
-  };
-};
-
-// 60. Reboot / Exit
-commands['reboot'] = commands['exit'] = () => {
-  document.body.classList.add('crt-reboot-flash');
-  sound.playBeep(320, 0.4, 'sawtooth');
-  setTimeout(() => {
-    document.body.classList.remove('crt-reboot-flash');
-  }, 1300);
-  return {
-    text: `[SYSTEM] REBOOT SEQUENCE INITIATED... DEGAUSSING CRT TUBE... OK.`,
-    isSuccess: true
-  };
+  return { text: `CURRENT SYSTEM TIME: [ ${new Date().toLocaleTimeString()} ]` };
 };

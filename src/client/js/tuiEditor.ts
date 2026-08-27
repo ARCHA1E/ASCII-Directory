@@ -1,6 +1,11 @@
 import { state, Category, DirectoryEntry } from './state.js';
 import { sound } from './audio.js';
 
+export interface TagInfo {
+  tag: string;
+  count: number;
+}
+
 export class TuiEditor {
   private modalEl: HTMLElement | null = null;
   private windowBoxEl: HTMLElement | null = null;
@@ -8,6 +13,7 @@ export class TuiEditor {
   private selectedCategoryIdx: number = 0;
   private selectedEntryIdx: number = 0;
   private onDataChangedCallback: (() => void) | null = null;
+  private tagSortMode: 'alpha' | 'count' = 'alpha';
 
   constructor(onDataChanged: () => void) {
     this.modalEl = document.getElementById('tui-modal');
@@ -56,9 +62,9 @@ export class TuiEditor {
         return;
       }
 
-      const categories = state.data?.categories || [];
+      const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
       const currentCategory = categories[this.selectedCategoryIdx];
-      const entries = currentCategory?.entries || [];
+      const entries = currentCategory ? [...currentCategory.entries].sort((a, b) => a.order - b.order) : [];
 
       // Panel Switching
       if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -133,6 +139,13 @@ export class TuiEditor {
         return;
       }
 
+      // Tag Management Shortcut (T = Tags)
+      if (e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        this.promptManageTags();
+        return;
+      }
+
       // Actions: Add / Edit / Delete
       if (e.key.toLowerCase() === 'a') {
         e.preventDefault();
@@ -167,12 +180,12 @@ export class TuiEditor {
   public render(): void {
     if (!this.windowBoxEl || !state.data) return;
 
-    const categories = state.data.categories.sort((a, b) => a.order - b.order);
+    const categories = [...state.data.categories].sort((a, b) => a.order - b.order);
     if (this.selectedCategoryIdx >= categories.length) {
       this.selectedCategoryIdx = Math.max(0, categories.length - 1);
     }
     const currentCategory = categories[this.selectedCategoryIdx];
-    const entries = currentCategory ? currentCategory.entries.sort((a, b) => a.order - b.order) : [];
+    const entries = currentCategory ? [...currentCategory.entries].sort((a, b) => a.order - b.order) : [];
     if (this.selectedEntryIdx >= entries.length) {
       this.selectedEntryIdx = Math.max(0, entries.length - 1);
     }
@@ -186,8 +199,8 @@ export class TuiEditor {
       const prefix = showCatNum ? `[${String(idx + 1).padStart(2, '0')}] ` : '';
       return `
         <div class="tui-list-item ${activeCls}" data-cat-idx="${idx}">
-          <span>${prefix}${cat.name}</span>
-          <span style="font-size: 11px; opacity: 0.7; margin-left: auto;">${cat.icon || '[DIR]'} (${cat.entries.length})</span>
+          <span>${prefix}${escapeHtml(cat.name)}</span>
+          <span style="font-size: 11px; opacity: 0.7; margin-left: auto;">${escapeHtml(cat.icon || '[DIR]')} (${cat.entries.length})</span>
         </div>
       `;
     }).join('');
@@ -198,10 +211,11 @@ export class TuiEditor {
           const isSelected = idx === this.selectedEntryIdx;
           const activeCls = isSelected ? 'active' : '';
           const prefix = showEntNum ? `[${String(idx + 1).padStart(2, '0')}] ` : '';
+          const tagsStr = (ent.tags || []).length ? ` (${(ent.tags || []).map(t => '#' + t).join(' ')})` : '';
           return `
             <div class="tui-list-item ${activeCls}" data-ent-idx="${idx}">
-              <span>${prefix}<strong>${ent.title}</strong></span>
-              <span style="font-size: 12px; color: var(--term-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: auto;">${ent.url}</span>
+              <span>${prefix}<strong>${escapeHtml(ent.title)}</strong><span style="font-size: 11px; opacity: 0.6; margin-left: 4px;">${escapeHtml(tagsStr)}</span></span>
+              <span style="font-size: 12px; color: var(--term-fg-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: auto;">${escapeHtml(ent.url)}</span>
             </div>
           `;
         }).join('');
@@ -219,6 +233,9 @@ export class TuiEditor {
           </button>
           <button id="tui-btn-toggle-ent-num" class="btn-retro-sm">
             <span class="tui-key-badge">[2]</span> Entry Numbers: <span class="${showEntNum ? 'tui-badge-on' : 'tui-badge-off'}">[${showEntNum ? 'ON' : 'OFF'}]</span>
+          </button>
+          <button id="tui-btn-manage-tags" class="btn-retro-sm">
+            <span class="tui-key-badge">[T]</span> Tag Library
           </button>
         </div>
         <div class="tui-move-controls">
@@ -240,7 +257,7 @@ export class TuiEditor {
 
         <div class="tui-panel">
           <div class="tui-panel-header">
-            <span>ENTRIES (${currentCategory ? currentCategory.name : 'NONE'}) ${this.activePanel === 'entries' ? '◄ [ACTIVE]' : ''}</span>
+            <span>ENTRIES (${currentCategory ? escapeHtml(currentCategory.name) : 'NONE'}) ${this.activePanel === 'entries' ? '◄ [ACTIVE]' : ''}</span>
           </div>
           <div class="tui-panel-list" id="tui-ent-list">
             ${entriesListHtml}
@@ -258,7 +275,7 @@ export class TuiEditor {
           <button id="tui-btn-del-cat" class="btn-retro-sm"><span class="tui-key-badge">[-]</span> Del Cat</button>
         </div>
         <div>
-          <span style="color: var(--term-fg-dim); font-size: 11px;">[Tab/Arrows] Switch • [U/N] Move • [1/2] Toggle # • [Q] Close</span>
+          <span style="color: var(--term-fg-dim); font-size: 11px;">[Tab/Arrows] Switch • [U/N] Move • [T] Tags • [1/2] Toggle # • [Q] Close</span>
         </div>
       </div>
     `;
@@ -276,6 +293,9 @@ export class TuiEditor {
 
     const toggleEntNumBtn = document.getElementById('tui-btn-toggle-ent-num');
     if (toggleEntNumBtn) toggleEntNumBtn.onclick = () => this.toggleEntryNumbers();
+
+    const manageTagsBtn = document.getElementById('tui-btn-manage-tags');
+    if (manageTagsBtn) manageTagsBtn.onclick = () => this.promptManageTags();
 
     const moveUpBtn = document.getElementById('tui-btn-move-up');
     if (moveUpBtn) moveUpBtn.onclick = () => this.moveSelectedItem('up');
@@ -369,7 +389,7 @@ export class TuiEditor {
   }
 
   public async moveSelectedItem(direction: 'up' | 'down'): Promise<void> {
-    const categories = state.data?.categories || [];
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     if (categories.length === 0) return;
 
     if (this.activePanel === 'categories') {
@@ -400,7 +420,7 @@ export class TuiEditor {
       }
     } else {
       const currentCategory = categories[this.selectedCategoryIdx];
-      const entries = currentCategory?.entries || [];
+      const entries = currentCategory ? [...currentCategory.entries].sort((a, b) => a.order - b.order) : [];
       const entry = entries[this.selectedEntryIdx];
       if (!entry) return;
 
@@ -429,6 +449,183 @@ export class TuiEditor {
     }
   }
 
+  // ── Tag Management Modal View ──────────────────────────────────────────────
+  public async promptManageTags(): Promise<void> {
+    this.closeDialog();
+
+    let tagsList: TagInfo[] = [];
+    try {
+      const res = await fetch('/api/tags');
+      const data = await res.json();
+      tagsList = data.tags || [];
+    } catch {
+      tagsList = [];
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'tui-dialog-overlay';
+
+    const renderTagModal = () => {
+      const sortedTags = [...tagsList].sort((a, b) => {
+        if (this.tagSortMode === 'count') {
+          return b.count - a.count || a.tag.localeCompare(b.tag);
+        }
+        return a.tag.localeCompare(b.tag);
+      });
+
+      const rowsHtml = sortedTags.length === 0
+        ? `<tr><td colspan="4" style="color: var(--term-fg-dim); text-align: center; padding: 16px;">&lt; No tags in library &gt;</td></tr>`
+        : sortedTags.map((t, idx) => `
+            <tr>
+              <td style="font-weight: bold; color: var(--term-fg-bright);">#${escapeHtml(t.tag)}</td>
+              <td style="color: var(--term-fg-dim);">${t.count} entries</td>
+              <td style="text-align: right;">
+                <button type="button" class="btn-retro-sm btn-rename-tag" data-tag="${escapeHtml(t.tag)}">[R RENAME]</button>
+                <button type="button" class="btn-retro-sm btn-delete-tag" data-tag="${escapeHtml(t.tag)}">[D DELETE]</button>
+              </td>
+            </tr>
+          `).join('');
+
+      overlay.innerHTML = `
+        <div class="tui-dialog-box" style="max-width: 680px;">
+          <div class="tui-dialog-title">+--[ GLOBAL TAG MANAGEMENT LIBRARY ]--+</div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="text" id="tui-new-tag-input" placeholder="New tag name (e.g. storage)..." style="width: 200px; padding: 4px 8px; font-size: 12px;" />
+              <button type="button" id="tui-btn-create-tag" class="btn-retro-sm">[+] Add Tag</button>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button type="button" id="tui-btn-sort-tags" class="btn-retro-sm">
+                Sort: [${this.tagSortMode === 'alpha' ? 'Name A-Z' : 'Usage Count'}]
+              </button>
+            </div>
+          </div>
+
+          <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--term-border); background: rgba(0,0,0,0.3);">
+            <table class="tui-tag-manager-table">
+              <thead>
+                <tr>
+                  <th>Tag Name</th>
+                  <th>Usage Count</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tui-dialog-actions" style="margin-top: 14px;">
+            <button type="button" id="tui-tag-modal-close" class="btn-retro">[CLOSE & RETURN]</button>
+          </div>
+        </div>
+      `;
+
+      // Bind events
+      const closeBtn = overlay.querySelector('#tui-tag-modal-close') as HTMLButtonElement;
+      if (closeBtn) closeBtn.onclick = () => this.closeDialog();
+
+      const sortBtn = overlay.querySelector('#tui-btn-sort-tags') as HTMLButtonElement;
+      if (sortBtn) {
+        sortBtn.onclick = () => {
+          this.tagSortMode = this.tagSortMode === 'alpha' ? 'count' : 'alpha';
+          renderTagModal();
+        };
+      }
+
+      const createBtn = overlay.querySelector('#tui-btn-create-tag') as HTMLButtonElement;
+      const newTagInput = overlay.querySelector('#tui-new-tag-input') as HTMLInputElement;
+
+      const handleAddTag = async () => {
+        const val = newTagInput?.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        if (!val) return;
+        try {
+          const res = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag: val })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            tagsList = data.tags || [];
+            if (data.data) state.setData(data.data);
+            sound.playSuccessChime();
+            renderTagModal();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      if (createBtn) createBtn.onclick = handleAddTag;
+      if (newTagInput) {
+        newTagInput.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddTag();
+          }
+        };
+      }
+
+      // Rename handlers
+      overlay.querySelectorAll('.btn-rename-tag').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const oldTag = (btn as HTMLElement).dataset.tag;
+          if (!oldTag) return;
+          const newTag = prompt(`Enter new name for #${oldTag}:`, oldTag);
+          if (!newTag || newTag.trim() === oldTag) return;
+          try {
+            const res = await fetch(`/api/tags/${encodeURIComponent(oldTag)}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ newTag: newTag.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              tagsList = data.tags || [];
+              if (data.data) state.setData(data.data);
+              sound.playSuccessChime();
+              renderTagModal();
+              this.render();
+              if (this.onDataChangedCallback) this.onDataChangedCallback();
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        });
+      });
+
+      // Delete handlers
+      overlay.querySelectorAll('.btn-delete-tag').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const tag = (btn as HTMLElement).dataset.tag;
+          if (!tag) return;
+          if (confirm(`Remove tag #${tag} from all directory entries?`)) {
+            try {
+              const res = await fetch(`/api/tags/${encodeURIComponent(tag)}`, { method: 'DELETE' });
+              if (res.ok) {
+                const data = await res.json();
+                tagsList = data.tags || [];
+                if (data.data) state.setData(data.data);
+                sound.playBeep(320, 0.1, 'sawtooth');
+                renderTagModal();
+                this.render();
+                if (this.onDataChangedCallback) this.onDataChangedCallback();
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        });
+      });
+    };
+
+    renderTagModal();
+    document.getElementById('tui-modal')?.appendChild(overlay);
+  }
+
   private promptAddCategory(): void {
     this.showCategoryDialog('ADD NEW CATEGORY', { name: '', icon: '[DIR]' }, async (formData) => {
       try {
@@ -454,7 +651,7 @@ export class TuiEditor {
   }
 
   private promptEditCategory(): void {
-    const categories = state.data?.categories || [];
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     const cat = categories[this.selectedCategoryIdx];
     if (!cat) return;
 
@@ -481,7 +678,7 @@ export class TuiEditor {
   }
 
   private async promptDeleteCategory(): Promise<void> {
-    const categories = state.data?.categories || [];
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     const cat = categories[this.selectedCategoryIdx];
     if (!cat) return;
 
@@ -502,8 +699,8 @@ export class TuiEditor {
     }
   }
 
-  private promptAddEntry(): void {
-    const categories = state.data?.categories || [];
+  private async promptAddEntry(): Promise<void> {
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     const currentCategory = categories[this.selectedCategoryIdx];
     if (!currentCategory) return;
 
@@ -511,7 +708,7 @@ export class TuiEditor {
       title: '',
       url: 'https://',
       description: '',
-      tags: '',
+      tags: [],
       categoryId: currentCategory.id
     }, async (formData) => {
       try {
@@ -523,7 +720,7 @@ export class TuiEditor {
             title: formData.title,
             url: formData.url,
             description: formData.description,
-            tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+            tags: formData.tags
           })
         });
         if (res.ok) {
@@ -535,7 +732,7 @@ export class TuiEditor {
           if (this.onDataChangedCallback) this.onDataChangedCallback();
         } else {
           sound.playErrorBuzz();
-          alert('Failed to add entry. Check authentication.');
+          alert('Failed to add entry.');
         }
       } catch (err) {
         sound.playErrorBuzz();
@@ -544,17 +741,18 @@ export class TuiEditor {
     });
   }
 
-  private promptEditEntry(): void {
-    const categories = state.data?.categories || [];
+  private async promptEditEntry(): Promise<void> {
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     const currentCategory = categories[this.selectedCategoryIdx];
-    const entry = currentCategory?.entries[this.selectedEntryIdx];
+    const entries = currentCategory ? [...currentCategory.entries].sort((a, b) => a.order - b.order) : [];
+    const entry = entries[this.selectedEntryIdx];
     if (!entry) return;
 
     this.showEntryDialog('EDIT DIRECTORY ENTRY', {
       title: entry.title,
       url: entry.url,
       description: entry.description,
-      tags: (entry.tags || []).join(', '),
+      tags: entry.tags || [],
       categoryId: currentCategory.id
     }, async (formData) => {
       try {
@@ -566,20 +764,22 @@ export class TuiEditor {
             title: formData.title,
             url: formData.url,
             description: formData.description,
-            tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+            tags: formData.tags
           })
         });
         if (res.ok) {
           const data = await res.json();
           state.setData(data.data);
           
-          // If moved to a different category, switch active category to the new target
-          const newCatIdx = state.data?.categories.findIndex(c => c.id === formData.categoryId);
-          if (newCatIdx !== undefined && newCatIdx !== -1) {
+          // Re-sort to find new index of destination category and entry
+          const updatedCategories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
+          const newCatIdx = updatedCategories.findIndex(c => c.id === formData.categoryId);
+          if (newCatIdx !== -1) {
             this.selectedCategoryIdx = newCatIdx;
-            const targetCat = state.data?.categories[newCatIdx];
-            const newEntIdx = targetCat?.entries.findIndex(e => e.id === entry.id);
-            this.selectedEntryIdx = newEntIdx !== undefined && newEntIdx !== -1 ? newEntIdx : 0;
+            const targetCat = updatedCategories[newCatIdx];
+            const targetEntries = [...(targetCat.entries || [])].sort((a, b) => a.order - b.order);
+            const newEntIdx = targetEntries.findIndex(e => e.id === entry.id);
+            this.selectedEntryIdx = newEntIdx !== -1 ? newEntIdx : 0;
           }
 
           sound.playSuccessChime();
@@ -598,9 +798,10 @@ export class TuiEditor {
   }
 
   private async promptDeleteEntry(): Promise<void> {
-    const categories = state.data?.categories || [];
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
     const currentCategory = categories[this.selectedCategoryIdx];
-    const entry = currentCategory?.entries[this.selectedEntryIdx];
+    const entries = currentCategory ? [...currentCategory.entries].sort((a, b) => a.order - b.order) : [];
+    const entry = entries[this.selectedEntryIdx];
     if (!entry) return;
 
     if (confirm(`Delete entry "${entry.title}"?`)) {
@@ -672,19 +873,66 @@ export class TuiEditor {
     };
   }
 
-  private showEntryDialog(
+  private async showEntryDialog(
     title: string, 
-    initial: { title: string; url: string; description: string; tags: string; categoryId: string },
-    onSubmit: (data: typeof initial) => void
-  ): void {
+    initial: { title: string; url: string; description: string; tags: string[]; categoryId: string },
+    onSubmit: (data: { title: string; url: string; description: string; tags: string[]; categoryId: string }) => void
+  ): Promise<void> {
     this.closeDialog();
+
+    // Fetch available tags from library
+    let availableTags: TagInfo[] = [];
+    try {
+      const res = await fetch('/api/tags');
+      const data = await res.json();
+      availableTags = data.tags || [];
+    } catch {
+      availableTags = [];
+    }
+
+    let selectedTags: string[] = [...(initial.tags || [])];
 
     const overlay = document.createElement('div');
     overlay.className = 'tui-dialog-overlay';
 
-    const catOptions = (state.data?.categories || [])
-      .map(c => `<option value="${c.id}" ${c.id === initial.categoryId ? 'selected' : ''}>${c.name}</option>`)
+    const categories = [...(state.data?.categories || [])].sort((a, b) => a.order - b.order);
+    const catOptions = categories
+      .map(c => `<option value="${c.id}" ${c.id === initial.categoryId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`)
       .join('');
+
+    const renderChips = () => {
+      const wrapper = overlay.querySelector('#tui-chips-list');
+      if (!wrapper) return;
+
+      const allTagNames = Array.from(new Set([...availableTags.map(t => t.tag), ...selectedTags])).sort();
+
+      wrapper.innerHTML = allTagNames.map(tag => {
+        const selIdx = selectedTags.indexOf(tag);
+        const isSelected = selIdx !== -1;
+        const badge = isSelected ? `<span class="tui-tag-chip-order">${selIdx + 1}</span>` : '';
+        return `
+          <button type="button" class="tui-tag-chip ${isSelected ? 'selected' : ''}" data-tag="${escapeHtml(tag)}">
+            #${escapeHtml(tag)} ${badge}
+          </button>
+        `;
+      }).join('');
+
+      // Chip click events
+      wrapper.querySelectorAll('.tui-tag-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = (btn as HTMLElement).dataset.tag;
+          if (!t) return;
+          const idx = selectedTags.indexOf(t);
+          if (idx !== -1) {
+            selectedTags.splice(idx, 1);
+          } else {
+            selectedTags.push(t);
+          }
+          sound.playKeyClick();
+          renderChips();
+        });
+      });
+    };
 
     overlay.innerHTML = `
       <div class="tui-dialog-box">
@@ -706,10 +954,18 @@ export class TuiEditor {
             <label>Description:</label>
             <input type="text" id="form-desc" value="${escapeHtml(initial.description)}" placeholder="Brief note / subtitle" />
           </div>
+          
           <div class="tui-form-group">
-            <label>Tags (comma separated):</label>
-            <input type="text" id="form-tags" value="${escapeHtml(initial.tags)}" placeholder="homelab, infra, pve" />
+            <label>Tags (Select from library or add new):</label>
+            <div class="tui-tag-picker-container">
+              <div class="tui-tag-chips-wrapper" id="tui-chips-list"></div>
+              <div class="tui-tag-quick-add">
+                <input type="text" id="form-quick-tag-input" placeholder="+ Add custom tag..." />
+                <button type="button" id="form-btn-add-quick-tag" class="btn-retro-sm">[ADD TAG]</button>
+              </div>
+            </div>
           </div>
+
           <div class="tui-dialog-actions">
             <button type="button" id="form-btn-cancel" class="btn-retro">[CANCEL]</button>
             <button type="submit" class="btn-retro">[SUBMIT & SAVE]</button>
@@ -720,11 +976,48 @@ export class TuiEditor {
 
     document.getElementById('tui-modal')?.appendChild(overlay);
 
+    renderChips();
+
     const form = overlay.querySelector('#tui-entry-form') as HTMLFormElement;
     const cancelBtn = overlay.querySelector('#form-btn-cancel') as HTMLButtonElement;
     const titleInput = overlay.querySelector('#form-title') as HTMLInputElement;
+    const quickTagInput = overlay.querySelector('#form-quick-tag-input') as HTMLInputElement;
+    const quickTagBtn = overlay.querySelector('#form-btn-add-quick-tag') as HTMLButtonElement;
 
     setTimeout(() => titleInput?.focus(), 50);
+
+    const handleQuickAdd = async () => {
+      const val = quickTagInput?.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (!val) return;
+      if (!selectedTags.includes(val)) {
+        selectedTags.push(val);
+      }
+      quickTagInput.value = '';
+      try {
+        const res = await fetch('/api/tags', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag: val })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          availableTags = data.tags || [];
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      renderChips();
+    };
+
+    if (quickTagBtn) quickTagBtn.onclick = handleQuickAdd;
+    if (quickTagInput) {
+      quickTagInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleQuickAdd();
+        }
+      };
+    }
 
     cancelBtn.onclick = () => this.closeDialog();
 
@@ -733,14 +1026,13 @@ export class TuiEditor {
       const catSelect = overlay.querySelector('#form-cat-id') as HTMLSelectElement;
       const urlInput = overlay.querySelector('#form-url') as HTMLInputElement;
       const descInput = overlay.querySelector('#form-desc') as HTMLInputElement;
-      const tagsInput = overlay.querySelector('#form-tags') as HTMLInputElement;
 
       onSubmit({
         categoryId: catSelect.value,
         title: titleInput.value.trim(),
         url: urlInput.value.trim(),
         description: descInput.value.trim(),
-        tags: tagsInput.value.trim()
+        tags: selectedTags
       });
     };
   }
