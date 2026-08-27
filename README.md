@@ -1,15 +1,23 @@
 # 📟 ASCII DIRECTORY // RETRO GATEWAY
 
-> A 1980s CRT terminal-themed web directory and homelab gateway designed for self-hosting on **Proxmox** (LXC/Docker) and serving across custom domains via **Cloudflare Tunnels**.
+> A 1980s CRT terminal-themed web directory and homelab gateway designed for self-hosting on **Proxmox** (LXC/Docker).
 
 ```text
- █████╗ ███████╗ ██████╗██╗██╗    ██████╗ ██╗██████╗ ███████╗ ██████╗████████╗ ██████╗ ██████╗ ██╗   ██╗
-██╔══██╗██╔════╝██╔════╝██║██║    ██╔══██╗██║██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝
-███████║███████╗██║     ██║██║    ██║  ██║██║██████╔╝█████╗  ██║        ██║   ██║   ██║██████╔╝ ╚████╔╝ 
-██╔══██║╚════██║██║     ██║██║    ██║  ██║██║██╔══██╗██╔══╝  ██║        ██║   ██║   ██║██╔══██╗  ╚██╔╝  
-██║  ██║███████║╚██████╗██║██║    ██████╔╝██║██║  ██║███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║   ██║   
-╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝╚═╝    ╚═════╝ ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-==========================================================================================================
+   ,---,          .--.--.      ,----..      ,---,    ,---,             ,---,                                                   ___                                      
+  '  .' \        /  /    '.   /   /   \  ,`--.' | ,`--.' |           .'  .' `\     ,--,                                      ,--.'|_                                    
+ /  ;    '.     |  :  /`. /  |   :     : |   :  : |   :  :         ,---.'     \  ,--.'|      __  ,-.                         |  | :,'     ,---.     __  ,-.             
+:  :       \    ;  |  |--`   .   |  ;. / :   |  ' :   |  '         |   |  .`\  | |  |,     ,' ,'/ /|                         :  : ' :    '   ,'\  ,' ,'/ /|             
+:  |   /\   \   |  :  ;_     .   ; /--`  |   :  | |   :  |         :   : |  '  | `--'_     '  | |' |    ,---.      ,---.   .;__,'  /    /   /   | '  | |' |       .--,  
+|  :  ' ;.   :   \  \    `.  ;   | ;     '   '  ; '   '  ;         |   ' '  ;  : ,' ,'|    |  |   ,'   /     \    /     \  |  |   |    .   ; ,. : |  |   ,'     /_ ./|  
+|  |  ;/  \   \   `----.   \ |   : |     |   |  | |   |  |         '   | ;  .  | '  | |    '  :  /    /    /  |  /    / '  :__,'| :    '   | |: : '  :  /    , ' , ' :  
+'  :  | \  \ ,'   __ \  \  | .   | '___  '   :  ; '   :  ;         |   | :  |  ' |  | :    |  | '    .    ' / | .    ' /     '  : |__  '   | .; : |  | '    /___/ \: |  
+|  |  '  '--'    /  /`--'  / '   ; : .'| |   |  ' |   |  '         '   : | /  ;  '  : |__  ;  : |    '   ;   /| '   ; :__    |  | '.'| |   :    | ;  : |     .  \\  ' |  
+|  :  :         '--'.     /  '   | '/  : '   :  | '   :  |         |   | '` ,/   |  | '.'| |  , ;    '   |  / | '   | '.'|   ;  :    ;  \   \  /  |  , ;      \  ;   :  
+|  | ,'           `--'---'   |   :    /  ;   |.'  ;   |.'          ;   :  .'     ;  :    ;  ---'     |   :    | |   :    :   |  ,   /    `----'    ---'        \  \  ;  
+`--''                         \   \ .'   '---'    '---'            |   ,.'       |  ,   /             \   \  /   \   \  /     ---`-'                            :  \\  \\ 
+                               `---`                               '---'          ---`-'               `----'     `----'                                         \\  ' ; 
+                                                                                                                                                                  `--`  
+====================================================================================================================================================
 ```
 
 ---
@@ -20,40 +28,36 @@
   - Phosphor Color Palettes: **P1 Green**, **P3 Amber**, **P4 Cyan**, **P45 Monochrome White**, and **Matrix Glow**.
   - Toggleable CRT scanline overlays, phosphor bloom/glow, subtle flicker, and power-on/reboot degauss animations.
 - **Synthesized Web Audio Engine**:
-  - Zero external audio files required! Synthesizes authentic IBM Model M mechanical keyboard key-clacks, 8-bit PC speaker beeps, error buzzes, and arpeggiated login chimes using the HTML5 Web Audio API.
+  - Zero external audio files required — synthesizes authentic IBM Model M mechanical keyboard key-clacks, 8-bit PC speaker beeps, error buzzes, and arpeggiated login chimes using HTML5 Web Audio API.
 - **Categorized ASCII Directory Layout**:
   - Beautiful ASCII box frames (`+---+`, `|`, `+---+`) with dynamic padding and responsive wrapping.
   - Quick Index Numbers `[01]`, `[02]`, domain URLs, descriptions, and hashtags.
 - **Dual Keyboard & Mouse Navigation**:
-  - Click any link directly to launch in a new tab.
+  - Click any link directly to open in a new tab.
   - Keyboard navigation: Arrow keys (`↑`/`↓`), `j`/`k` to navigate, `Enter` to open URL, `Tab` to cycle categories, `/` to focus the terminal, and typing index numbers (e.g. `1`, `02`) to quick-jump.
 - **Unobtrusive Command Bar & Secret Admin Login**:
-  - Constantly visible terminal prompt at the bottom (`guest@gateway:~$ `).
-  - Type `login <password>` to authenticate. Password verification is performed **100% on the server side** with secure HTTP-only session cookies and rate limiting.
+  - Constantly visible terminal prompt positioned above the directory (`guest@gateway:~$ `).
+  - Automatically hides the directory list when typing to give a clean terminal view (`Escape` returns to directory).
+  - Type `login <password>` to authenticate. Password verification is performed **100% on the server side** with secure HTTP-only session cookies and brute-force rate limiting.
 - **Interactive Retro TUI Editor (Curses-style)**:
   - Logging in as admin launches a full-screen retro curses modal editor.
   - Manage categories and entries directly from the keyboard:
     - `[A]` Add Entry &nbsp;•&nbsp; `[E]` Edit Entry &nbsp;•&nbsp; `[D]` Delete Entry
     - `[+]` Add Category &nbsp;•&nbsp; `[-]` Delete Category &nbsp;•&nbsp; `[R]` Rename
-    - `[Tab/Arrows]` Switch panels &nbsp;•&nbsp; `[Q/Esc]` Exit
+    - `[Tab/Arrows]` Switch panels &nbsp;•&nbsp; `[Q]` Close Editor
 - **60 Terminal Utilities & Easter Eggs**:
   - Rich collection of terminal commands and simulations (`starwars`, `cmatrix`, `sl`, `pipes`, `cowsay`, `neofetch`, `snake`, `tetris`, `pong`, `zork`, `weather`, `rickroll`, `sudo`, `hack`, `top`, `fire`, `donut`, `tux`, etc.).
 - **Zero-Dependency Atomic Storage**:
   - Stores data in `data/directory.json` with thread-safe atomic writes and automatic timestamped rolling backups (`data/backups/`).
-- **Turnkey Proxmox & Cloudflare Deployment**:
-  - Multi-stage `Dockerfile` and `docker-compose.yml`.
-  - Automated Proxmox LXC container setup script (`deployment/proxmox-lxc.sh`).
-  - Cloudflare Tunnel setup guide (`deployment/cloudflare-tunnel.md`).
 
 ---
 
-## 🚀 Quick Start
-
-### Running Locally with Node.js
+## 🚀 Quick Start (Local)
 
 ```bash
-# 1. Clone or navigate to the repository
-cd directory
+# 1. Clone the repository
+git clone https://github.com/ARCHA1E/ASCII-Directory.git
+cd ASCII-Directory
 
 # 2. Install dependencies
 npm install
@@ -70,49 +74,35 @@ Access the web interface at `http://localhost:3000`.
 
 ---
 
-## 🐳 Running with Docker & Docker Compose
-
-```bash
-# Build and run in background
-docker compose up -d --build
-```
-
-View logs:
-```bash
-docker compose logs -f
-```
-
----
-
 ## 🖥️ Proxmox Deployment
 
 ### Option A: Proxmox LXC Container (Debian / Ubuntu)
 
-1. Create a lightweight Debian 12 or Ubuntu 22.04+ LXC in Proxmox.
-2. Inside the LXC container terminal, run:
+1. Create a standard Debian 12 or Ubuntu 22.04+ LXC container in Proxmox.
+2. Inside your LXC container console, clone this repository and run the setup script:
    ```bash
-   curl -sSL https://raw.githubusercontent.com/your-username/ascii-directory/main/deployment/proxmox-lxc.sh | bash
+   git clone https://github.com/ARCHA1E/ASCII-Directory.git /opt/ascii-directory
+   cd /opt/ascii-directory
+   chmod +x deployment/proxmox-lxc.sh
+   ./deployment/proxmox-lxc.sh
    ```
-   *Or copy the repository and execute `deployment/proxmox-lxc.sh` directly.*
-3. The script automatically installs Node.js 22 LTS, builds the application, and starts the `ascii-directory` systemd service.
+3. The script automatically installs Node.js 22 LTS (if missing), builds the assets, prompts for your desired admin password, and starts the `ascii-directory` systemd service configured to auto-start on boot.
 
-### Option B: Docker in Proxmox VM / LXC
+Manage the service:
+```bash
+systemctl status ascii-directory
+systemctl restart ascii-directory
+```
 
-Simply clone the repository and run `docker compose up -d`.
+### Option B: Docker / Docker Compose in Proxmox
 
----
-
-## ☁️ Cloudflare Domain & Tunnel Setup
-
-To make your directory accessible worldwide on your custom domain (e.g. `https://directory.yourdomain.com`) without opening router ports:
-
-1. In your [Cloudflare Dashboard](https://dash.cloudflare.com), go to **Zero Trust** -> **Networks** -> **Tunnels**.
-2. Click **Create a Tunnel** and select **Cloudflared**.
-3. Install `cloudflared` on your Proxmox host or container.
-4. Set the Public Hostname:
-   - **Hostname**: `directory.yourdomain.com`
-   - **Service**: `HTTP` -> `localhost:3000`
-5. See [deployment/cloudflare-tunnel.md](deployment/cloudflare-tunnel.md) for full step-by-step instructions.
+1. In your Docker-enabled LXC container or VM:
+   ```bash
+   git clone https://github.com/ARCHA1E/ASCII-Directory.git
+   cd ASCII-Directory
+   docker compose up -d --build
+   ```
+2. The directory will be available on port `3000` (or `PORT` configured in `.env`).
 
 ---
 
@@ -138,8 +128,8 @@ To make your directory accessible worldwide on your custom domain (e.g. `https:/
 | **`Enter`** | Open highlighted entry in browser |
 | **`Tab`** | Cycle focus across category sections |
 | **`01`, `02`, `1..N`** | Quick-jump to entry by index number |
-| **`/`** | Focus bottom terminal command bar |
-| **`Escape`** | Unfocus terminal / Return to directory view |
+| **`/`** | Focus terminal command bar (hides directory list while typing) |
+| **`Escape`** | Unfocus terminal & return to directory view |
 | **`[THEME]`** | Cycle CRT Phosphor theme (Green, Amber, Cyan, White, Matrix) |
 | **`[CRT]`** | Toggle CRT scanlines and phosphor shaders on/off |
 | **`[AUDIO]`** | Toggle synthesized mechanical keyclacks & PC beeps |
@@ -148,7 +138,7 @@ To make your directory accessible worldwide on your custom domain (e.g. `https:/
 
 ## 💻 Terminal Commands & Easter Eggs
 
-Type any of the following into the bottom command line:
+Type any of the following into the command line:
 
 | Command | Description |
 | :--- | :--- |
@@ -165,7 +155,7 @@ Type any of the following into the bottom command line:
 | `cowthink <text>` | ASCII thinking cow |
 | `sl` | Animated Steam Locomotive train chugging across screen |
 | `pipes` | Multi-color retro pipe screensaver |
-| `neofetch` / `fastfetch` | Vintage system specs with ASCII Gateway logo |
+| `neofetch` / `fastfetch` | Arch Linux system specs and ASCII logo |
 | `fortune` | Classic UNIX fortune cookie quotes |
 | `hollywood` | Cyberpunk mainframe hacking simulation |
 | `snake`, `tetris`, `pong` | Playable mini ASCII arcade games |
