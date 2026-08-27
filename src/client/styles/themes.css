@@ -1,0 +1,80 @@
+:root,
+html[data-theme="green"] {
+  --term-bg: #080f08;
+  --term-fg: #33ff33;
+  --term-fg-dim: #1f991f;
+  --term-fg-bright: #66ff66;
+  --term-accent: #70ff70;
+  --term-border: #248f24;
+  --term-highlight-bg: #0e300e;
+  --term-glow: 0 0 8px rgba(51, 255, 51, 0.45);
+  --term-glow-strong: 0 0 14px rgba(51, 255, 51, 0.75);
+  --term-cursor: #33ff33;
+  --term-selection: rgba(51, 255, 51, 0.25);
+  --crt-scanline-color: rgba(0, 0, 0, 0.35);
+  --theme-name: "P1 GREEN";
+}
+
+html[data-theme="amber"] {
+  --term-bg: #120b02;
+  --term-fg: #ffb000;
+  --term-fg-dim: #9e6d00;
+  --term-fg-bright: #ffc84d;
+  --term-accent: #ffd270;
+  --term-border: #8c6000;
+  --term-highlight-bg: #382200;
+  --term-glow: 0 0 8px rgba(255, 176, 0, 0.45);
+  --term-glow-strong: 0 0 14px rgba(255, 176, 0, 0.75);
+  --term-cursor: #ffb000;
+  --term-selection: rgba(255, 176, 0, 0.25);
+  --crt-scanline-color: rgba(0, 0, 0, 0.35);
+  --theme-name: "P3 AMBER";
+}
+
+html[data-theme="cyan"] {
+  --term-bg: #030f14;
+  --term-fg: #00e5ff;
+  --term-fg-dim: #008796;
+  --term-fg-bright: #66efff;
+  --term-accent: #80f3ff;
+  --term-border: #00808f;
+  --term-highlight-bg: #042933;
+  --term-glow: 0 0 8px rgba(0, 229, 255, 0.45);
+  --term-glow-strong: 0 0 14px rgba(0, 229, 255, 0.75);
+  --term-cursor: #00e5ff;
+  --term-selection: rgba(0, 229, 255, 0.25);
+  --crt-scanline-color: rgba(0, 0, 0, 0.35);
+  --theme-name: "P4 CYAN";
+}
+
+html[data-theme="white"] {
+  --term-bg: #0d0d0d;
+  --term-fg: #e0e0e0;
+  --term-fg-dim: #888888;
+  --term-fg-bright: #ffffff;
+  --term-accent: #ffffff;
+  --term-border: #666666;
+  --term-highlight-bg: #2a2a2a;
+  --term-glow: 0 0 8px rgba(255, 255, 255, 0.35);
+  --term-glow-strong: 0 0 14px rgba(255, 255, 255, 0.65);
+  --term-cursor: #ffffff;
+  --term-selection: rgba(255, 255, 255, 0.25);
+  --crt-scanline-color: rgba(0, 0, 0, 0.4);
+  --theme-name: "MONOCHROME";
+}
+
+html[data-theme="matrix"] {
+  --term-bg: #020a04;
+  --term-fg: #00ff66;
+  --term-fg-dim: #00993d;
+  --term-fg-bright: #52ff99;
+  --term-accent: #80ffb3;
+  --term-border: #008033;
+  --term-highlight-bg: #062b10;
+  --term-glow: 0 0 10px rgba(0, 255, 102, 0.55);
+  --term-glow-strong: 0 0 18px rgba(0, 255, 102, 0.85);
+  --term-cursor: #00ff66;
+  --term-selection: rgba(0, 255, 102, 0.3);
+  --crt-scanline-color: rgba(0, 0, 0, 0.38);
+  --theme-name: "MATRIX GLOW";
+}

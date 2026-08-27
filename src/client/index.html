@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII DIRECTORY // GATEWAY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/themes.css">
+  <link rel="stylesheet" href="/styles/crt.css">
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body class="crt-enabled">
+  <div id="crt-overlay"></div>
+  <div id="crt-vignette"></div>
+
+  <div id="terminal-container">
+    <!-- Header Banner Area -->
+    <header id="system-header">
+      <div id="ascii-banner" class="ascii-art"></div>
+      <div class="system-statusbar">
+        <div class="status-left">
+          <span class="badge">[HOST: <span id="status-host">RETRO-GW-01</span>]</span>
+          <span class="badge">[UPTIME: <span id="status-uptime">00:00:00</span>]</span>
+          <span class="badge">[STATUS: <span class="status-online">ONLINE</span>]</span>
+        </div>
+        <div class="status-right">
+          <button id="btn-theme-cycle" class="btn-retro" title="Cycle CRT Theme">[THEME: <span id="current-theme-label">P1 GREEN</span>]</button>
+          <button id="btn-crt-toggle" class="btn-retro" title="Toggle CRT Scanlines">[CRT: <span id="crt-status-label">ON</span>]</button>
+          <button id="btn-audio-toggle" class="btn-retro" title="Toggle Key Sounds & Speaker Beeps">[AUDIO: <span id="audio-status-label">ON</span>]</button>
+        </div>
+      </div>
+      <div id="system-motd" class="motd-bar"></div>
+    </header>
+
+    <!-- Terminal Command Bar & Output Area (Placed Above Directory) -->
+    <section id="terminal-section">
+      <div class="command-line-wrapper">
+        <div class="prompt-label" id="term-prompt">guest@gateway:~$</div>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="terminal-input" 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false"
+            placeholder="Type command or index number..."
+          />
+          <span class="custom-cursor">█</span>
+        </div>
+        <div class="shortcut-hints">
+          <span class="hint">[Tab/Arrows]: Nav</span>
+          <span class="hint">[Enter]: Open</span>
+          <span class="hint">[/]: Focus CLI</span>
+          <span class="hint">[Esc]: Show Directory</span>
+        </div>
+      </div>
+
+      <div id="terminal-output-container" class="collapsed">
+        <div class="output-header">
+          <span>───[ TERMINAL OUTPUT BUFFER ]───</span>
+          <button id="btn-clear-term" class="btn-retro-sm">[CLEAR]</button>
+          <button id="btn-close-term" class="btn-retro-sm">[MINIMIZE]</button>
+        </div>
+        <div id="terminal-output" class="terminal-log"></div>
+      </div>
+    </section>
+
+    <!-- Main ASCII Directory Listing -->
+    <main id="directory-content">
+      <div id="directory-list" role="tree" tabindex="0">
+        <!-- Rendered dynamically by renderer.ts -->
+      </div>
+    </main>
+
+    <!-- Interactive Retro TUI Editor Modal -->
+    <div id="tui-modal" class="hidden">
+      <div class="tui-backdrop"></div>
+      <div class="tui-window" id="tui-window-box">
+        <!-- Rendered by tuiEditor.ts -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.ts"></script>
+</body>
+</html>

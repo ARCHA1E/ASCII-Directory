@@ -1,0 +1,82 @@
+/* CRT Scanline & Phosphor Shader Effects */
+
+body.crt-enabled {
+  text-shadow: var(--term-glow);
+}
+
+body.crt-enabled #crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    var(--crt-scanline-color) 50%
+  );
+  background-size: 100% 4px;
+  animation: scanlineScroll 0.25s linear infinite;
+  opacity: 0.85;
+}
+
+body.crt-enabled #crt-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    circle at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 85%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+body.crt-enabled #terminal-container {
+  animation: subtleFlicker 0.15s infinite alternate;
+}
+
+@keyframes scanlineScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+@keyframes subtleFlicker {
+  0% { opacity: 0.99; }
+  50% { opacity: 1; }
+  100% { opacity: 0.985; }
+}
+
+/* CRT Degauss / Reboot Flash */
+.crt-reboot-flash {
+  animation: crtReboot 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes crtReboot {
+  0% {
+    filter: brightness(5) blur(4px);
+    transform: scale(1.02);
+  }
+  20% {
+    filter: brightness(0.1);
+    transform: scale(0.99, 0.005);
+  }
+  40% {
+    filter: brightness(2);
+    transform: scale(1, 0.01);
+  }
+  70% {
+    filter: brightness(1.2);
+    transform: scale(1, 0.8);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1, 1);
+  }
+}
