@@ -96,7 +96,7 @@ if [[ "$CT_EXISTS" == "true" ]]; then
   CT_STATUS=$(pct status "$CT_ID" | awk '{print $2}')
   whiptail --backtitle "ASCII Directory // Proxmox Installer" \
     --title "Update Existing Container" \
-    --yesno "Container $CT_ID found (status: $CT_STATUS).\n\nThis will:\n  • Pull latest code from GitHub\n  • Rebuild the client and server\n  • Restart the ascii-directory service\n\nYour data/directory.json is never overwritten. Proceed?" \
+    --yesno "Container $CT_ID found (status: $CT_STATUS).\n\nThis will:\n  • Pull latest code from GitHub\n  • Rebuild the client and server\n  • Restart the ascii-directory service\n\nYour data/directory.json is preserved and never lost. Proceed?" \
     14 64 || exit 0
 
   if [[ "$CT_STATUS" != "running" ]]; then
@@ -108,8 +108,17 @@ if [[ "$CT_EXISTS" == "true" ]]; then
 
   msg_info "Updating ASCII Directory in container $CT_ID"
   pct exec "$CT_ID" -- bash -c "
+    set -e
     cd /opt/ascii-directory
-    git pull origin main
+    if [ -f /opt/ascii-directory/data/directory.json ]; then
+      cp /opt/ascii-directory/data/directory.json /tmp/dir_backup.json
+    fi
+    git fetch origin main
+    git reset --hard origin/main
+    if [ -f /tmp/dir_backup.json ]; then
+      mkdir -p /opt/ascii-directory/data
+      cp /tmp/dir_backup.json /opt/ascii-directory/data/directory.json
+    fi
     npm install
     npm run build
     systemctl restart ascii-directory
@@ -138,65 +147,109 @@ DETECTED_STORAGE=$(pvesm status -content rootdir 2>/dev/null | awk 'NR>1 {print 
 
 STORAGE=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
   --title "Storage Pool" \
-  --inputbox "Proxmox storage pool for container rootfs:" \
+  --inputbox "Enter Proxmox storage pool for root disk (e.g. local-lvm, local-zfs, local):" \
   9 64 "$DEF_STORAGE" 3>&1 1>&2 2>&3) || exit 1
 
-BRIDGE=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+DISK_SIZE=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+  --title "Disk Size (GB)" \
+  --inputbox "Enter container disk size in GB:" \
+  9 64 "4" 3>&1 1>&2 2>&3) || exit 1
+
+RAM=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+  --title "RAM (MB)" \
+  --inputbox "Enter memory allocation in MB (512MB recommended):" \
+  9 64 "512" 3>&1 1>&2 2>&3) || exit 1
+
+CORES=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+  --title "CPU Cores" \
+  --inputbox "Enter number of CPU cores:" \
+  9 64 "1" 3>&1 1>&2 2>&3) || exit 1
+
+NET_BRIDGE=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
   --title "Network Bridge" \
-  --inputbox "Network bridge interface:" \
+  --inputbox "Enter network bridge (e.g. vmbr0):" \
   9 64 "vmbr0" 3>&1 1>&2 2>&3) || exit 1
+
+IP_TYPE=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+  --title "Network IP Assignment" \
+  --radiolist "Select IP assignment type:" \
+  10 64 2 \
+  "dhcp"   "Automatic DHCP (Recommended)" ON \
+  "static" "Manual Static IP Address"     OFF \
+  3>&1 1>&2 2>&3) || exit 1
+
+NET_CONFIG="name=eth0,bridge=${NET_BRIDGE},ip=dhcp"
+if [[ "$IP_TYPE" == "static" ]]; then
+  STATIC_IP=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+    --title "Static IP Address" \
+    --inputbox "Enter IP with CIDR (e.g. 192.168.1.50/24):" \
+    9 64 "" 3>&1 1>&2 2>&3) || exit 1
+  
+  STATIC_GW=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
+    --title "Gateway IP" \
+    --inputbox "Enter default gateway IP (e.g. 192.168.1.1):" \
+    9 64 "" 3>&1 1>&2 2>&3) || exit 1
+
+  NET_CONFIG="name=eth0,bridge=${NET_BRIDGE},ip=${STATIC_IP},gw=${STATIC_GW}"
+fi
 
 ADMIN_PASS=$(whiptail --backtitle "ASCII Directory // Proxmox Installer" \
   --title "Admin Password" \
-  --inputbox "Enter master Admin Password for directory management:\n(Used for 'login <password>' in terminal)" \
-  10 64 "admin123" 3>&1 1>&2 2>&3) || exit 1
+  --inputbox "Set Admin password for TUI editor (login <password>):" \
+  9 64 "admin123" 3>&1 1>&2 2>&3) || exit 1
 
+# ── Summary Confirmation ───────────────────────────────────────────────────────
 whiptail --backtitle "ASCII Directory // Proxmox Installer" \
-  --title "Confirm Deployment" \
-  --yesno "Ready to create and deploy:\n
-  Container ID : $CT_ID
-  Hostname     : $CT_HOSTNAME
-  Storage      : $STORAGE
-  Bridge       : $BRIDGE
-  App Port     : 3000\n
-Proceed with automatic installation?" \
+  --title "Ready to Install" \
+  --yesno "Container ID:    $CT_ID\nHostname:        $CT_HOSTNAME\nStorage:         $STORAGE (${DISK_SIZE}GB)\nRAM:             ${RAM}MB / ${CORES} Core(s)\nNetwork:         $NET_CONFIG\nAdmin Pass:      $ADMIN_PASS\n\nProceed with automated LXC creation and deployment?" \
   15 64 || exit 0
 
-# ── Debian 12 Template ────────────────────────────────────────────────────────
-msg_info "Locating Debian 12 template"
-TEMPLATE=$(pveam list local 2>/dev/null | awk '/debian-12/{print $1}' | tail -1)
+# ── Debian 12 Template Acquisition ───────────────────────────────────────────
+msg_info "Updating Proxmox appliance template database"
+pveam update &>/dev/null || true
+msg_ok "Template database updated"
 
-if [[ -z "$TEMPLATE" ]]; then
-  msg_info "Downloading Debian 12 template from Proxmox repository"
-  pveam update &>/dev/null
-  TEMPLATE_NAME=$(pveam available --section system 2>/dev/null | awk '/debian-12-standard/{print $2}' | tail -1)
-  [[ -z "$TEMPLATE_NAME" ]] && msg_error "No Debian 12 template found. Run 'pveam update' manually."
-  pveam download local "$TEMPLATE_NAME" &>/dev/null
-  TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
+TEMPLATE="debian-12-standard_12.7-1_amd64.tar.zst"
+# Find latest available debian-12 template in pveam
+LATEST_DEBIAN=$(pveam available -section system 2>/dev/null | grep 'debian-12-standard' | awk '{print $2}' | tail -1 || true)
+[[ -n "$LATEST_DEBIAN" ]] && TEMPLATE="$LATEST_DEBIAN"
+
+TEMPLATE_STORAGE="local"
+TEMPLATE_PATH="/var/lib/vz/template/cache/${TEMPLATE}"
+
+if [[ ! -f "$TEMPLATE_PATH" ]]; then
+  msg_info "Downloading $TEMPLATE into $TEMPLATE_STORAGE"
+  pveam download "$TEMPLATE_STORAGE" "$TEMPLATE" || msg_error "Failed to download Debian template."
+  msg_ok "Template downloaded"
+else
+  msg_ok "Template $TEMPLATE found in local cache"
 fi
-msg_ok "Template ready ($TEMPLATE)"
 
-# ── Create Container ──────────────────────────────────────────────────────────
-CT_PASSWORD=$(openssl rand -base64 16)
-msg_info "Creating unprivileged LXC container $CT_ID"
-pct create "$CT_ID" "$TEMPLATE" \
-  --hostname  "$CT_HOSTNAME" \
-  --ostype    debian \
-  --cores     1 \
-  --memory    512 \
-  --swap      512 \
-  --rootfs    "${STORAGE}:4" \
-  --net0      "name=eth0,bridge=${BRIDGE},ip=dhcp" \
-  --unprivileged 1 \
-  --password  "$CT_PASSWORD" \
-  --start     1 &>/dev/null
-msg_ok "Container $CT_ID created and started"
+# ── Container Creation ────────────────────────────────────────────────────────
+msg_info "Creating LXC container $CT_ID ($CT_HOSTNAME)"
+pct create "$CT_ID" "${TEMPLATE_STORAGE}:vztmpl/${TEMPLATE}" \
+  -hostname "$CT_HOSTNAME" \
+  -cores "$CORES" \
+  -memory "$RAM" \
+  -swap 512 \
+  -storage "$STORAGE" \
+  -rootfs "${STORAGE}:${DISK_SIZE}" \
+  -net0 "$NET_CONFIG" \
+  -unprivileged 1 \
+  -features nesting=1 \
+  -onboot 1 \
+  -start 0 || msg_error "Failed to create LXC container."
+msg_ok "LXC container created"
 
-# ── Wait for IP ───────────────────────────────────────────────────────────────
-msg_info "Waiting for container to acquire network IP"
+msg_info "Starting container $CT_ID"
+pct start "$CT_ID" || msg_error "Failed to start container."
+msg_ok "Container running"
+
+# ── Wait for Network / DNS ───────────────────────────────────────────────────
+msg_info "Waiting for container network initialization"
 CT_IP=""
-for i in $(seq 1 30); do
-  sleep 2
+for i in {1..30}; do
+  sleep 1
   CT_IP=$(pct exec "$CT_ID" -- bash -c "ip -4 addr show eth0 2>/dev/null | grep -oP '(?<=inet )[^/]+'" 2>/dev/null || true)
   [[ -n "$CT_IP" ]] && break
   [[ $i -eq 30 ]] && msg_error "Container did not acquire IP via DHCP. Check your bridge/DHCP server."
